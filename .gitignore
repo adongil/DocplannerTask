@@ -1,0 +1,16 @@
+# Visual Studio files
+.vs/
+*.user
+*.suo
+*.cache
+*.db
+*.log
+
+# Build artifacts
+bin/
+obj/
+TestResults/
+
+# Dependency directories
+packages/
+node_modules/
