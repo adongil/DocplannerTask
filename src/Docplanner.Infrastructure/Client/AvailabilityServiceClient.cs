@@ -1,11 +1,17 @@
-﻿using Flurl.Http;
+﻿using Microsoft.Extensions.Configuration;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Flurl.Http;
 using Docplanner.Domain.AvailavilityService;
 using System.Text.Json;
 using System.Net;
 
 namespace Docplanner.Infrastructure.Client
 {
-    public class AvailabilityServiceClient
+    public class AvailabilityServiceClient : IAvailabilityServiceClient
     {
         private readonly string _baseUrl;
         private readonly string _authHeader;

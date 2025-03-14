@@ -1,6 +1,5 @@
 ﻿using Flurl.Http.Testing;
 using Docplanner.Infrastructure.Client;
-using Flurl.Http;
 using System.Net;
 using Docplanner.Domain.AvailavilityService;
 
@@ -43,7 +42,7 @@ namespace Docplanner.Infrastructure.Tests.Client
             yield return new object[] { HttpStatusCode.BadRequest, "Bad Request: The request was invalid." };
             yield return new object[] { HttpStatusCode.Unauthorized, "Unauthorized: Authentication failed." };
             yield return new object[] { HttpStatusCode.InternalServerError, "Internal Server Error: There was a problem with the server." };
-            yield return new object[] { HttpStatusCode.Ambiguous, "Undefined Error" };
+            yield return new object[] { (HttpStatusCode)418, "An unexpected error occurred." };
         }
 
         [Theory]
@@ -65,6 +64,30 @@ namespace Docplanner.Infrastructure.Tests.Client
             Assert.Equal(expectedMessage, exception.Message);
         }
 
+        public static IEnumerable<object[]> GetInvalidJsonResponses()
+        {
+            yield return new object[] { "", "The input does not contain any JSON tokens" };
+            yield return new object[] { "banana", "is an invalid start of a value" };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetInvalidJsonResponses))]
+        public async Task GivenInvalidJsonResponse_WhenGetWeeklyAvailability_ThenHandleException(string responseContent, string expectedInnerMessage)
+        {
+            using var httpTest = new HttpTest();
+
+            httpTest
+                .ForCallsTo($"{BaseUrl}/GetWeeklyAvailability/20240311")
+                .WithVerb(HttpMethod.Get)
+                .WithHeader("Authorization", AuthHeader)
+                .RespondWith(responseContent, 200);
+
+            var exception = await Assert.ThrowsAsync<Exception>(async () =>
+                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11))
+            );
+
+            Assert.Contains(expectedInnerMessage, exception.InnerException.Message);
+        }
 
         private string GetAvailavilityServiceMockedJsonResponse()
         {
