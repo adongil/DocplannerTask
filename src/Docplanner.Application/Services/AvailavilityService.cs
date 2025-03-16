@@ -1,6 +1,7 @@
 ﻿using Docplanner.Domain.AvailavilityService;
 using Docplanner.Domain.DTO;
 using Docplanner.Infrastructure.Client;
+using System;
 
 namespace Docplanner.Application.Services
 {
@@ -22,21 +23,31 @@ namespace Docplanner.Application.Services
                 return new AvailableSlotsDTO(date, new List<DaySlotsDTO>());
             }
 
-            var availableWeekSlots = new List<DaySlotsDTO>();
-            foreach (var (dayOfWeek, dailyAvailability) in availabilityResponse.Days)
-            {
-                var currentDate = date.AddDays((int)dayOfWeek - 1);
-
-                var dailySlots = CalculateDailySlots(currentDate, dailyAvailability.WorkPeriod, availabilityResponse.SlotDurationMinutes);
-
-                var availableDailySlots = FilterNotAvailableDailySlots(dailySlots, dailyAvailability)
-                    .Select(dailySlot => dailySlot.ToString("yyyy-MM-dd HH:mm:ss")).ToList();
-
-                availableWeekSlots.Add(new DaySlotsDTO(dayOfWeek.ToString(), availableDailySlots));
-            }
+            var availableWeekSlots = availabilityResponse.Days
+                        .Select(day =>
+                        {
+                            var (dayOfWeek, dailyAvailability) = day;  
+                            return CreateDaySlots(date, availabilityResponse, dayOfWeek, dailyAvailability);
+                        })
+                        .ToList();
 
             return new AvailableSlotsDTO(date, availableWeekSlots);
         }
+
+
+        private DaySlotsDTO CreateDaySlots(DateOnly date ,AvailavilityServiceResponse availabilityResponse, DayOfWeek dayOfWeek, DailyAvailability dailyAvailability)
+        {
+            var availableDate = date.AddDays((int)dayOfWeek - 1);
+
+            var dailySlots = CalculateDailySlots(availableDate, dailyAvailability.WorkPeriod, availabilityResponse.SlotDurationMinutes);
+           
+            var availableDailySlots = FilterNotAvailableDailySlots(dailySlots, dailyAvailability)
+                .Select(dailySlot => dailySlot.ToString("yyyy-MM-dd HH:mm:ss"))
+                .ToList();
+
+            return new DaySlotsDTO(dayOfWeek.ToString(), availableDailySlots);
+        }
+
 
         private List<DateTime> CalculateDailySlots(DateOnly date, WorkPeriod workPeriod, int slotDurationMinutes)
         {
