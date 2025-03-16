@@ -2,18 +2,41 @@
 using Docplanner.Infrastructure.Client;
 using System.Net;
 using Docplanner.Domain.AvailavilityService;
+using Microsoft.Extensions.Configuration;
+using NSubstitute;
 
 namespace Docplanner.Infrastructure.Tests.Client
 {
     public class AvailabilityServiceClientTests
     {
-        private const string BaseUrl = "https://draliatest.azurewebsites.net/api/availability";
+        private const string BaseUrl = "https://mocked-url.com/api/availability";
         private const string AuthHeader = "Basic VGVjaHVzZXI6c2VjcmV0cGFzc1dvcmQ=";
         private readonly AvailabilityServiceClient _client;
 
         public AvailabilityServiceClientTests()
         {
-            _client = new AvailabilityServiceClient(AuthHeader);
+            var configuration = Substitute.For<IConfiguration>();
+            configuration["SlotService:BaseUrl"].Returns(BaseUrl);
+            _client = new AvailabilityServiceClient(configuration);
+        }
+
+        [Fact]
+        public async Task GivenNonMondayDate_WhenGetWeeklyAvailability_ThenThrowsHttpRequestException()
+        {
+            using var httpTest = new HttpTest();
+            var invalidDateResponse = "<string xmlns=\"http://schemas.microsoft.com/2003/10/Serialization/\">datetime must be a Monday</string>";
+
+            httpTest
+                .ForCallsTo($"{BaseUrl}/GetWeeklyAvailability/20240312") 
+                .WithVerb(HttpMethod.Get)
+                .WithHeader("Authorization", AuthHeader)
+                .RespondWith(invalidDateResponse, 400);
+
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 12), AuthHeader)
+            );
+
+            Assert.Contains("Datetime must be a Monday", exception.Message);
         }
 
         [Fact]
@@ -21,19 +44,23 @@ namespace Docplanner.Infrastructure.Tests.Client
         {
             using var httpTest = new HttpTest();
             httpTest
-                .ForCallsTo($"https://draliatest.azurewebsites.net/api/availability/GetWeeklyAvailability/20240311")
+                .ForCallsTo($"{BaseUrl}/GetWeeklyAvailability/20240311")
                 .WithVerb(HttpMethod.Get)
                 .WithHeader("Authorization", AuthHeader)
                 .RespondWith(GetAvailavilityServiceMockedJsonResponse());
 
-            var client = new AvailabilityServiceClient(AuthHeader);
-            var result = await client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11));
+            var result = await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11), AuthHeader);
 
             Assert.NotNull(result);
             AssertFacility(result.Facility);
-            AssertSlotDurationMinutes(result.SlotDurationMinutes);
-            AssertWorkDays(result.WorkDays);
-            AssertBusySlots(result.BusySlots);
+            Assert.Equal(60, result.SlotDurationMinutes);
+            Assert.True(result.Days.ContainsKey(DayOfWeek.Tuesday));
+            Assert.True(result.Days.ContainsKey(DayOfWeek.Thursday));
+            Assert.True(result.Days.ContainsKey(DayOfWeek.Friday));
+            Assert.False(result.Days.ContainsKey(DayOfWeek.Monday));
+            Assert.False(result.Days.ContainsKey(DayOfWeek.Wednesday));
+            Assert.False(result.Days.ContainsKey(DayOfWeek.Saturday));
+            Assert.False(result.Days.ContainsKey(DayOfWeek.Sunday));
         }
 
         public static IEnumerable<object[]> GetErrorResponses()
@@ -47,7 +74,7 @@ namespace Docplanner.Infrastructure.Tests.Client
 
         [Theory]
         [MemberData(nameof(GetErrorResponses))]
-        public async Task GivenErrorResponse_WhenGetWeeklyAvailability_ThenThrowsException(HttpStatusCode statusCode, string expectedMessage)
+        public async Task GivenErrorResponse_WhenGetWeeklyAvailability_ThenThrowsHttpRequestException(HttpStatusCode statusCode, string expectedMessage)
         {
             using var httpTest = new HttpTest();
 
@@ -57,8 +84,8 @@ namespace Docplanner.Infrastructure.Tests.Client
                 .WithHeader("Authorization", AuthHeader)
                 .RespondWith(string.Empty, (int)statusCode);
 
-            var exception = await Assert.ThrowsAsync<Exception>(async () =>
-                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11))
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11), AuthHeader)
             );
 
             Assert.Equal(expectedMessage, exception.Message);
@@ -72,7 +99,7 @@ namespace Docplanner.Infrastructure.Tests.Client
 
         [Theory]
         [MemberData(nameof(GetInvalidJsonResponses))]
-        public async Task GivenInvalidJsonResponse_WhenGetWeeklyAvailability_ThenHandleException(string responseContent, string expectedInnerMessage)
+        public async Task GivenInvalidJsonResponse_WhenGetWeeklyAvailability_ThenHandleJsonException(string responseContent, string expectedInnerMessage)
         {
             using var httpTest = new HttpTest();
 
@@ -82,11 +109,11 @@ namespace Docplanner.Infrastructure.Tests.Client
                 .WithHeader("Authorization", AuthHeader)
                 .RespondWith(responseContent, 200);
 
-            var exception = await Assert.ThrowsAsync<Exception>(async () =>
-                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11))
+            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11), AuthHeader)
             );
 
-            Assert.Contains(expectedInnerMessage, exception.InnerException.Message);
+            Assert.Contains(expectedInnerMessage, exception.InnerException?.Message);
         }
 
         private string GetAvailavilityServiceMockedJsonResponse()
@@ -98,80 +125,42 @@ namespace Docplanner.Infrastructure.Tests.Client
                     ""Address"": ""Josep Pla 2, Edifici B2 08019 Barcelona""
                 },
                 ""SlotDurationMinutes"": 60,
-                ""WorkDays"": {
-                    ""Tuesday"": {
-                        ""WorkPeriod"": {
-                            ""StartHour"": 10,
-                            ""EndHour"": 13,
-                            ""LunchStartHour"": 17,
-                            ""LunchEndHour"": 19
-                        }
-                    },
-                    ""Thursday"": {
-                        ""WorkPeriod"": {
-                            ""StartHour"": 10,
-                            ""EndHour"": 13,
-                            ""LunchStartHour"": 17,
-                            ""LunchEndHour"": 19
-                        }
+                ""Tuesday"": {
+                    ""WorkPeriod"": {
+                        ""StartHour"": 9,
+                        ""EndHour"": 17,
+                        ""LunchStartHour"": 13,
+                        ""LunchEndHour"": 14
                     }
                 },
-                ""BusySlots"": [
-                    { ""Start"": ""2017-06-15T10:00:00"", ""End"": ""2017-06-15T11:00:00"" },
-                    { ""Start"": ""2017-06-15T11:00:00"", ""End"": ""2017-06-15T12:00:00"" },
-                    { ""Start"": ""2017-06-15T17:00:00"", ""End"": ""2017-06-15T18:00:00"" }
-                ]
+                ""Thursday"": {
+                    ""WorkPeriod"": {
+                        ""StartHour"": 9,
+                        ""EndHour"": 17,
+                        ""LunchStartHour"": 13,
+                        ""LunchEndHour"": 14
+                    },
+                    ""BusySlots"": [
+                        { ""Start"": ""2017-06-15T10:00:00"", ""End"": ""2017-06-15T11:00:00"" },
+                        { ""Start"": ""2017-06-15T11:00:00"", ""End"": ""2017-06-15T12:00:00"" }
+                    ]
+                },
+                ""Friday"": {
+                    ""WorkPeriod"": {
+                        ""StartHour"": 8,
+                        ""EndHour"": 16,
+                        ""LunchStartHour"": 13,
+                        ""LunchEndHour"": 14
+                    }
+                }
             }";
         }
-
 
         private void AssertFacility(Facility facility)
         {
             Assert.NotNull(facility);
             Assert.Equal("Facility Example", facility.Name);
             Assert.Equal("Josep Pla 2, Edifici B2 08019 Barcelona", facility.Address);
-        }
-
-        private void AssertSlotDurationMinutes(int slotDurationMinutes)
-        {
-            Assert.Equal(60, slotDurationMinutes);
-        }
-
-        private void AssertWorkDays(Dictionary<string, WorkDay> workDays)
-        {
-            Assert.NotNull(workDays);
-            Assert.Contains("Tuesday", workDays);
-            Assert.Contains("Thursday", workDays);
-
-            var tuesdayWorkPeriod = workDays["Tuesday"].WorkPeriod;
-            ValidateWorkPeriod(tuesdayWorkPeriod, 10, 13, 17, 19);
-
-            var thursdayWorkPeriod = workDays["Thursday"].WorkPeriod;
-            ValidateWorkPeriod(thursdayWorkPeriod, 10, 13, 17, 19);
-        }
-
-        private void ValidateWorkPeriod(WorkPeriod workPeriod, int expectedStartHour, int expectedEndHour, int expectedLunchStart, int expectedLunchEnd)
-        {
-            Assert.Equal(expectedStartHour, workPeriod.StartHour);
-            Assert.Equal(expectedEndHour, workPeriod.EndHour);
-            Assert.Equal(expectedLunchStart, workPeriod.LunchStartHour);
-            Assert.Equal(expectedLunchEnd, workPeriod.LunchEndHour);
-        }
-
-        private void AssertBusySlots(List<BusySlot> busySlots)
-        {
-            Assert.NotNull(busySlots);
-            Assert.Equal(3, busySlots.Count);
-
-            ValidateBusySlot(busySlots[0], new DateTime(2017, 6, 15, 10, 0, 0), new DateTime(2017, 6, 15, 11, 0, 0));
-            ValidateBusySlot(busySlots[1], new DateTime(2017, 6, 15, 11, 0, 0), new DateTime(2017, 6, 15, 12, 0, 0));
-            ValidateBusySlot(busySlots[2], new DateTime(2017, 6, 15, 17, 0, 0), new DateTime(2017, 6, 15, 18, 0, 0));
-        }
-
-        private void ValidateBusySlot(BusySlot busySlot, DateTime expectedStart, DateTime expectedEnd)
-        {
-            Assert.Equal(expectedStart, busySlot.Start);
-            Assert.Equal(expectedEnd, busySlot.End);
         }
     }
 }

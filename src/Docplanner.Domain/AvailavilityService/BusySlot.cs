@@ -3,7 +3,7 @@
 namespace Docplanner.Domain.AvailavilityService
 {
     public record BusySlot(
-        [property: JsonPropertyName("Start")] DateTime? Start,
-        [property: JsonPropertyName("End")] DateTime? End
+        [property: JsonPropertyName("Start")] DateTime Start,
+        [property: JsonPropertyName("End")] DateTime End
     );
 }

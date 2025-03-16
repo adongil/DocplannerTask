@@ -4,6 +4,6 @@ namespace Docplanner.Infrastructure.Client
 {
     public interface IAvailabilityServiceClient
     {
-        Task<AvailavilityServiceResponse> GetWeeklyAvailabilityAsync(DateOnly date);
+        Task<AvailavilityServiceResponse> GetWeeklyAvailabilityAsync(DateOnly date, string authHeader);
     }
 }

@@ -1,58 +1,59 @@
-﻿using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
+using System.Text.Json;
 using Flurl.Http;
 using Docplanner.Domain.AvailavilityService;
-using System.Text.Json;
-using System.Net;
+using Microsoft.Extensions.Configuration;
 
 namespace Docplanner.Infrastructure.Client
 {
     public class AvailabilityServiceClient : IAvailabilityServiceClient
     {
         private readonly string _baseUrl;
-        private readonly string _authHeader;
 
-        public AvailabilityServiceClient(string AuthHeader)
+        public AvailabilityServiceClient(IConfiguration configuration)
         {
-            _authHeader = AuthHeader;
-            _baseUrl = "https://draliatest.azurewebsites.net/api/availability";
+            _baseUrl = configuration["SlotService:BaseUrl"] ?? throw new ArgumentNullException(nameof(configuration));
         }
 
-
-        public async Task<AvailavilityServiceResponse> GetWeeklyAvailabilityAsync(DateOnly date)
+        public async Task<AvailavilityServiceResponse> GetWeeklyAvailabilityAsync(DateOnly date, string authHeader)
         {
             try
             {
                 var url = $"{_baseUrl}/GetWeeklyAvailability/{date:yyyyMMdd}";
                 var responseString = await url
-                    .WithHeader("Authorization", _authHeader)
+                    .WithHeader("Authorization", authHeader)
                     .GetStringAsync();
 
-                return JsonSerializer.Deserialize<AvailavilityServiceResponse>(responseString);
+                return JsonSerializer.Deserialize<AvailavilityServiceResponse>(responseString)!;
             }
             catch (FlurlHttpException ex) when (ex.StatusCode == (int)HttpStatusCode.BadRequest)
             {
-                throw new Exception("Bad Request: The request was invalid.",ex);
+                var errorMessage = await ex.GetResponseStringAsync();
+                if (errorMessage.Contains("datetime must be a Monday"))
+                {
+                    throw new HttpRequestException("Bad Request: Datetime must be a Monday.", ex);
+                }
+                throw new HttpRequestException("Bad Request: The request was invalid.", ex);
             }
             catch (FlurlHttpException ex) when (ex.StatusCode == (int)HttpStatusCode.Unauthorized)
             {
-                throw new Exception("Unauthorized: Authentication failed.",ex);
+                throw new HttpRequestException("Unauthorized: Authentication failed.", ex);
             }
             catch (FlurlHttpException ex) when (ex.StatusCode == (int)HttpStatusCode.NotFound)
             {
-                throw new Exception("Not Found: The requested resource could not be found.",ex);
+                throw new HttpRequestException("Not Found: The requested resource could not be found.", ex);
             }
             catch (FlurlHttpException ex) when (ex.StatusCode == (int)HttpStatusCode.InternalServerError)
             {
-                throw new Exception("Internal Server Error: There was a problem with the server.",ex);
+                throw new HttpRequestException("Internal Server Error: There was a problem with the server.", ex);
             }
-            catch(Exception ex)
+            catch (JsonException ex)
             {
-                throw new Exception("An unexpected error occurred.", ex);
+                throw new HttpRequestException("Invalid JSON response format.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpRequestException("An unexpected error occurred.", ex);
             }
         }
     }
