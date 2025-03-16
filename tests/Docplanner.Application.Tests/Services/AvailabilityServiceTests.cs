@@ -42,14 +42,14 @@ namespace Docplanner.Application.Tests.Services
         public async Task GivenAValidDateAndADefinedRangeOfWorkingHours_WhenGettingWeeklyAvailability_ThenReturnAllValidSlotsInDefinedRange()
         {
             // Arrange
-            var requestedDate = new DateOnly(2024, 3, 14);
+            var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
                 {
                     DayCandidate = new Dictionary<string, JsonElement>
                     {
-                        { "Tuesday", JsonSerializer.SerializeToElement(new DailyAvailability(new WorkPeriod(9, 17, 0, 0), null)) }
+                        { "Wednesday", JsonSerializer.SerializeToElement(new DailyAvailability(new WorkPeriod(9, 17, 0, 0), null)) }
                     }
                 };
             _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate).Returns(weeklyAvailabilityResponse);
@@ -60,12 +60,12 @@ namespace Docplanner.Application.Tests.Services
             // Assert
             var expectedTimeSlots = new List<string>
                 {
-                    "2024-03-14 09:00:00","2024-03-14 10:00:00","2024-03-14 11:00:00","2024-03-14 12:00:00",
-                    "2024-03-14 13:00:00","2024-03-14 14:00:00","2024-03-14 15:00:00","2024-03-14 16:00:00"
+                    "2024-03-12 09:00:00","2024-03-12 10:00:00","2024-03-12 11:00:00","2024-03-12 12:00:00",
+                    "2024-03-12 13:00:00","2024-03-12 14:00:00","2024-03-12 15:00:00","2024-03-12 16:00:00"
                 };
 
             Assert.Single(availableWeekSlots.Days);
-            Assert.Equal("Tuesday", availableWeekSlots.Days.First().Day);
+            Assert.Equal("Wednesday", availableWeekSlots.Days.First().Day);
             Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
         }
 
@@ -74,7 +74,7 @@ namespace Docplanner.Application.Tests.Services
         public async Task GivenAValidDateAndADefinedRangeOfWorkingHoursWithLuchBreak_WhenGettingWeeklyAvailability_ThenReturnAllValidSlotsInDefinedRange()
         {
             // Arrange
-            var requestedDate = new DateOnly(2024, 3, 14);
+            var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
@@ -92,8 +92,8 @@ namespace Docplanner.Application.Tests.Services
             // Assert
             var expectedTimeSlots = new List<string>
                 {
-                    "2024-03-14 09:00:00","2024-03-14 10:00:00","2024-03-14 11:00:00","2024-03-14 12:00:00",
-                    "2024-03-14 14:00:00","2024-03-14 15:00:00","2024-03-14 16:00:00"
+                    "2024-03-11 09:00:00","2024-03-11 10:00:00","2024-03-11 11:00:00","2024-03-11 12:00:00",
+                    "2024-03-11 14:00:00","2024-03-11 15:00:00","2024-03-11 16:00:00"
                 };
 
             Assert.Single(availableWeekSlots.Days);
@@ -106,14 +106,14 @@ namespace Docplanner.Application.Tests.Services
         public async Task GivenAValidDateAndADefinedRangeOfWorkingHoursWithLuchBreakAndBusySlots_WhenGettingWeeklyAvailability_ThenReturnAllValidSlotsInDefinedRange()
         {
             // Arrange
-            var requestedDate = new DateOnly(2024, 3, 14);
+            var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
                 DayCandidate = new Dictionary<string, JsonElement>
                         {
-                            { "Tuesday", JsonSerializer.SerializeToElement(new DailyAvailability(
+                            { "Friday", JsonSerializer.SerializeToElement(new DailyAvailability(
                                 new WorkPeriod(9, 17, 13, 14),
                                 new List<BusySlot>
                                 {
@@ -135,7 +135,7 @@ namespace Docplanner.Application.Tests.Services
                 };
 
             Assert.Single(availableWeekSlots.Days);
-            Assert.Equal("Tuesday", availableWeekSlots.Days.First().Day);
+            Assert.Equal("Friday", availableWeekSlots.Days.First().Day);
             Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
         }
 
@@ -144,7 +144,7 @@ namespace Docplanner.Application.Tests.Services
         public async Task GivenAValidDateAndADefinedRangeOfWorkingHoursWithLunchBreakAndNoBookedSlots_WhenGettingWeeklyAvailability_ThenReturnAllValidSlotsInDefinedRange()
         {
             // Arrange
-            var requestedDate = new DateOnly(2024, 3, 14);
+            var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
@@ -164,8 +164,8 @@ namespace Docplanner.Application.Tests.Services
             // Assert
             var expectedTimeSlots = new List<string>
             {
-                "2024-03-14 09:00:00", "2024-03-14 10:00:00", "2024-03-14 11:00:00", "2024-03-14 12:00:00",
-                "2024-03-14 14:00:00", "2024-03-14 15:00:00", "2024-03-14 16:00:00"
+                "2024-03-11 09:00:00", "2024-03-11 10:00:00", "2024-03-11 11:00:00", "2024-03-11 12:00:00",
+                "2024-03-11 14:00:00", "2024-03-11 15:00:00", "2024-03-11 16:00:00"
             };
 
             Assert.Single(availableWeekSlots.Days);
@@ -178,7 +178,7 @@ namespace Docplanner.Application.Tests.Services
         public async Task GivenAValidDateAndADefinedRangeOfWorkingHoursWithZeroDuration_WhenGettingWeeklyAvailability_ThenReturnNoAvailableSlots()
         {
             // Arrange
-            var requestedDate = new DateOnly(2024, 3, 14);
+            var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
@@ -205,7 +205,7 @@ namespace Docplanner.Application.Tests.Services
         public async Task GivenAValidDateAndADefinedRangeOfWorkingHoursWithOverlappingBusySlots_WhenGettingWeeklyAvailability_ThenReturnValidSlotsExcludingOverlappingSlots()
         {
             // Arrange
-            var requestedDate = new DateOnly(2024, 3, 14);
+            var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
@@ -216,8 +216,8 @@ namespace Docplanner.Application.Tests.Services
                         new WorkPeriod(9, 17, 13, 14),
                         new List<BusySlot>
                         {
-                            new BusySlot(new DateTime(2024, 3, 14, 10, 0, 0), new DateTime(2024, 3, 14, 12, 0, 0)),
-                            new BusySlot(new DateTime(2024, 3, 14, 11, 0, 0), new DateTime(2024, 3, 14, 13, 0, 0))
+                            new BusySlot(new DateTime(2024, 3, 11, 10, 0, 0), new DateTime(2024, 3, 11, 12, 0, 0)),
+                            new BusySlot(new DateTime(2024, 3, 11, 11, 0, 0), new DateTime(2024, 3, 11, 13, 0, 0))
                         }))
                     }
                 }
@@ -230,7 +230,7 @@ namespace Docplanner.Application.Tests.Services
             // Assert
             var expectedTimeSlots = new List<string>
             {
-                "2024-03-14 09:00:00", "2024-03-14 14:00:00", "2024-03-14 15:00:00", "2024-03-14 16:00:00"
+                "2024-03-11 09:00:00", "2024-03-11 14:00:00", "2024-03-11 15:00:00", "2024-03-11 16:00:00"
             };
 
             Assert.Single(availableWeekSlots.Days);

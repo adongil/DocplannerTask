@@ -13,7 +13,6 @@ namespace Docplanner.Application.Services
             _availabilityServiceClient = availabilityServiceClient;
         }
 
-
         public async Task<AvailableSlotsDTO> GetAvailableWeekSlotsAsync(DateOnly date)
         {
             var availabilityResponse = await _availabilityServiceClient.GetWeeklyAvailableSlots(date);
@@ -24,30 +23,37 @@ namespace Docplanner.Application.Services
             }
 
             var availableWeekSlots = new List<DaySlotsDTO>();
-
             foreach (var (dayOfWeek, dailyAvailability) in availabilityResponse.Days)
             {
-                var dailySlots = new List<DateTime>();
+                var currentDate = date.AddDays((int)dayOfWeek - 1);
 
-                var startHour = new DateTime(date.Year, date.Month, date.Day, dailyAvailability.WorkPeriod.StartHour, 0, 0);
-                var endHour = new DateTime(date.Year, date.Month, date.Day, dailyAvailability.WorkPeriod.EndHour, 0, 0);
+                var dailySlots = CalculateDailySlots(currentDate, dailyAvailability.WorkPeriod, availabilityResponse.SlotDurationMinutes);
 
-                for (var time = startHour; time < endHour; time = time.AddMinutes(availabilityResponse.SlotDurationMinutes))
-                {
-                    dailySlots.Add(time);
-                }
+                var availableDailySlots = FilterNotAvailableDailySlots(dailySlots, dailyAvailability)
+                    .Select(dailySlot => dailySlot.ToString("yyyy-MM-dd HH:mm:ss")).ToList();
 
-                dailySlots = FilterNotAvailableSlots(dailySlots, dailyAvailability);
-
-                var availableSlots = dailySlots.Select(dailySlot => dailySlot.ToString("yyyy-MM-dd HH:mm:ss")).ToList();
-
-                availableWeekSlots.Add(new DaySlotsDTO(dayOfWeek.ToString(), availableSlots));
+                availableWeekSlots.Add(new DaySlotsDTO(dayOfWeek.ToString(), availableDailySlots));
             }
 
             return new AvailableSlotsDTO(date, availableWeekSlots);
         }
 
-        private List<DateTime> FilterNotAvailableSlots(List<DateTime> slots, DailyAvailability dailyAvailability)
+        private List<DateTime> CalculateDailySlots(DateOnly date, WorkPeriod workPeriod, int slotDurationMinutes)
+        {
+            var dailySlots = new List<DateTime>();
+
+            var startHour = new DateTime(date.Year, date.Month, date.Day, workPeriod.StartHour, 0, 0);
+            var endHour = new DateTime(date.Year, date.Month, date.Day, workPeriod.EndHour, 0, 0);
+
+            for (var time = startHour; time < endHour; time = time.AddMinutes(slotDurationMinutes))
+            {
+                dailySlots.Add(time);
+            }
+
+            return dailySlots;
+        }
+
+        private List<DateTime> FilterNotAvailableDailySlots(List<DateTime> slots, DailyAvailability dailyAvailability)
         {
             var filteredSlots = slots
                 .Where(slot =>
