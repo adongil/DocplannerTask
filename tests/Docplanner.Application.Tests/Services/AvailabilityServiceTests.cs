@@ -16,7 +16,7 @@ namespace Docplanner.Application.Tests.Services
         public AvailabilityServiceTests()
         {
             _availabilityServiceClient = Substitute.For<IAvailabilityServiceClient>();
-            _availabilityService = new AvailavilityService(_availabilityServiceClient, AuthHeader);
+            _availabilityService = new AvailavilityService(_availabilityServiceClient);
         }
 
 
@@ -26,7 +26,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 14);
 
-            _availabilityServiceClient.GetWeeklyAvailabilityAsync(requestedDate, AuthHeader)
+            _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate)
                 .Returns(It.IsAny<AvailavilityServiceResponse>());
 
 
@@ -34,7 +34,7 @@ namespace Docplanner.Application.Tests.Services
             await _availabilityService.GetAvailableWeekSlotsAsync(requestedDate);
 
             // Assert
-            await _availabilityServiceClient.Received(1).GetWeeklyAvailabilityAsync(requestedDate, AuthHeader);
+            await _availabilityServiceClient.Received(1).GetWeeklyAvailableSlots(requestedDate);
         }
 
 
@@ -52,7 +52,7 @@ namespace Docplanner.Application.Tests.Services
                         { "Tuesday", JsonSerializer.SerializeToElement(new DailyAvailability(new WorkPeriod(9, 17, 0, 0), null)) }
                     }
                 };
-            _availabilityServiceClient.GetWeeklyAvailabilityAsync(requestedDate, AuthHeader).Returns(weeklyAvailabilityResponse);
+            _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate).Returns(weeklyAvailabilityResponse);
 
             // Act
             var availableWeekSlots = await _availabilityService.GetAvailableWeekSlotsAsync(requestedDate);
@@ -84,7 +84,7 @@ namespace Docplanner.Application.Tests.Services
                         { "Tuesday", JsonSerializer.SerializeToElement(new DailyAvailability(new WorkPeriod(9, 17, 13, 14), null)) }
                     }
             };
-            _availabilityServiceClient.GetWeeklyAvailabilityAsync(requestedDate, AuthHeader).Returns(weeklyAvailabilityResponse);
+            _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate).Returns(weeklyAvailabilityResponse);
 
             // Act
             var availableWeekSlots = await _availabilityService.GetAvailableWeekSlotsAsync(requestedDate);
@@ -122,7 +122,7 @@ namespace Docplanner.Application.Tests.Services
                             }
                         }
             };
-            _availabilityServiceClient.GetWeeklyAvailabilityAsync(requestedDate, AuthHeader).Returns(weeklyAvailabilityResponse);
+            _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate).Returns(weeklyAvailabilityResponse);
 
             // Act
             var availableWeekSlots = await _availabilityService.GetAvailableWeekSlotsAsync(requestedDate);
@@ -156,7 +156,7 @@ namespace Docplanner.Application.Tests.Services
                         null)) }
                 }
             };
-            _availabilityServiceClient.GetWeeklyAvailabilityAsync(requestedDate, AuthHeader).Returns(weeklyAvailabilityResponse);
+            _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate).Returns(weeklyAvailabilityResponse);
 
             // Act
             var availableWeekSlots = await _availabilityService.GetAvailableWeekSlotsAsync(requestedDate);
@@ -190,7 +190,7 @@ namespace Docplanner.Application.Tests.Services
                         null)) }
                 }
             };
-            _availabilityServiceClient.GetWeeklyAvailabilityAsync(requestedDate, AuthHeader).Returns(weeklyAvailabilityResponse);
+            _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate).Returns(weeklyAvailabilityResponse);
 
             // Act
             var availableWeekSlots = await _availabilityService.GetAvailableWeekSlotsAsync(requestedDate);
@@ -222,7 +222,7 @@ namespace Docplanner.Application.Tests.Services
                     }
                 }
             };
-            _availabilityServiceClient.GetWeeklyAvailabilityAsync(requestedDate, AuthHeader).Returns(weeklyAvailabilityResponse);
+            _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate).Returns(weeklyAvailabilityResponse);
 
             // Act
             var availableWeekSlots = await _availabilityService.GetAvailableWeekSlotsAsync(requestedDate);

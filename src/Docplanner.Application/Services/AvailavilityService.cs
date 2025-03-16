@@ -4,21 +4,19 @@ using Docplanner.Infrastructure.Client;
 
 namespace Docplanner.Application.Services
 {
-    public class AvailavilityService
+    public class AvailavilityService : IAvailavilityService
     {
         private readonly IAvailabilityServiceClient _availabilityServiceClient;
-        private readonly string _authHeader;
 
-        public AvailavilityService(IAvailabilityServiceClient availabilityServiceClient, string authHeader)
+        public AvailavilityService(IAvailabilityServiceClient availabilityServiceClient)
         {
             _availabilityServiceClient = availabilityServiceClient;
-            _authHeader = authHeader;
         }
 
 
         public async Task<AvailableSlotsDTO> GetAvailableWeekSlotsAsync(DateOnly date)
         {
-            var availabilityResponse = await _availabilityServiceClient.GetWeeklyAvailabilityAsync(date, _authHeader);
+            var availabilityResponse = await _availabilityServiceClient.GetWeeklyAvailableSlots(date);
 
             if (availabilityResponse == null)
             {

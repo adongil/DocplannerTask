@@ -3,22 +3,32 @@ using System.Text.Json;
 using Flurl.Http;
 using Docplanner.Domain.AvailavilityService;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
 
 namespace Docplanner.Infrastructure.Client
 {
     public class AvailabilityServiceClient : IAvailabilityServiceClient
     {
         private readonly string _baseUrl;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AvailabilityServiceClient(IConfiguration configuration)
+        public AvailabilityServiceClient(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
         {
             _baseUrl = configuration["SlotService:BaseUrl"] ?? throw new ArgumentNullException(nameof(configuration));
+            _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<AvailavilityServiceResponse> GetWeeklyAvailabilityAsync(DateOnly date, string authHeader)
+        public async Task<AvailavilityServiceResponse> GetWeeklyAvailableSlots(DateOnly date)
         {
             try
             {
+                var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
+
+                if (string.IsNullOrEmpty(authHeader))
+                {
+                    throw new UnauthorizedAccessException("Authorization header is missing or invalid.");
+                }
+
                 var url = $"{_baseUrl}/GetWeeklyAvailability/{date:yyyyMMdd}";
                 var responseString = await url
                     .WithHeader("Authorization", authHeader)

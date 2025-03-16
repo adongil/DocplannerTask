@@ -4,20 +4,30 @@ using System.Net;
 using Docplanner.Domain.AvailavilityService;
 using Microsoft.Extensions.Configuration;
 using NSubstitute;
+using Microsoft.AspNetCore.Http;
 
 namespace Docplanner.Infrastructure.Tests.Client
 {
     public class AvailabilityServiceClientTests
     {
         private const string BaseUrl = "https://mocked-url.com/api/availability";
-        private const string AuthHeader = "Basic VGVjaHVzZXI6c2VjcmV0cGFzc1dvcmQ=";
         private readonly AvailabilityServiceClient _client;
 
         public AvailabilityServiceClientTests()
         {
             var configuration = Substitute.For<IConfiguration>();
             configuration["SlotService:BaseUrl"].Returns(BaseUrl);
-            _client = new AvailabilityServiceClient(configuration);
+            
+            var httpContextAccessor = Substitute.For<IHttpContextAccessor>();
+            var httpContext = Substitute.For<HttpContext>();
+            var headers = new HeaderDictionary
+                {
+                    { "Authorization", "Basic VGVjaHVzZXI6c2VjcmV0cGFzc1dvcmQ=" }  
+                };
+            httpContext.Request.Headers.Returns(headers);
+            httpContextAccessor.HttpContext.Returns(httpContext); 
+            
+            _client = new AvailabilityServiceClient(configuration, httpContextAccessor);
         }
 
         [Fact]
@@ -29,27 +39,25 @@ namespace Docplanner.Infrastructure.Tests.Client
             httpTest
                 .ForCallsTo($"{BaseUrl}/GetWeeklyAvailability/20240312") 
                 .WithVerb(HttpMethod.Get)
-                .WithHeader("Authorization", AuthHeader)
                 .RespondWith(invalidDateResponse, 400);
 
             var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
-                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 12), AuthHeader)
+                await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 12))
             );
 
             Assert.Contains("Datetime must be a Monday", exception.Message);
         }
 
         [Fact]
-        public async Task GivenValidDate_WhenGetWeeklyAvailability_ThenReturnsSuccessWithinAServiceResponse()
+        public async Task GivenAMondayDate_WhenGetWeeklyAvailability_ThenReturnsSuccessWithinAServiceResponse()
         {
             using var httpTest = new HttpTest();
             httpTest
                 .ForCallsTo($"{BaseUrl}/GetWeeklyAvailability/20240311")
                 .WithVerb(HttpMethod.Get)
-                .WithHeader("Authorization", AuthHeader)
                 .RespondWith(GetAvailavilityServiceMockedJsonResponse());
 
-            var result = await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11), AuthHeader);
+            var result = await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 11));
 
             Assert.NotNull(result);
             AssertFacility(result.Facility);
@@ -71,7 +79,6 @@ namespace Docplanner.Infrastructure.Tests.Client
             yield return new object[] { HttpStatusCode.InternalServerError, "Internal Server Error: There was a problem with the server." };
             yield return new object[] { (HttpStatusCode)418, "An unexpected error occurred." };
         }
-
         [Theory]
         [MemberData(nameof(GetErrorResponses))]
         public async Task GivenErrorResponse_WhenGetWeeklyAvailability_ThenThrowsHttpRequestException(HttpStatusCode statusCode, string expectedMessage)
@@ -81,11 +88,10 @@ namespace Docplanner.Infrastructure.Tests.Client
             httpTest
                 .ForCallsTo($"{BaseUrl}/GetWeeklyAvailability/20240311")
                 .WithVerb(HttpMethod.Get)
-                .WithHeader("Authorization", AuthHeader)
                 .RespondWith(string.Empty, (int)statusCode);
 
             var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
-                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11), AuthHeader)
+                await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 11))
             );
 
             Assert.Equal(expectedMessage, exception.Message);
@@ -96,7 +102,6 @@ namespace Docplanner.Infrastructure.Tests.Client
             yield return new object[] { "", "The input does not contain any JSON tokens" };
             yield return new object[] { "banana", "is an invalid start of a value" };
         }
-
         [Theory]
         [MemberData(nameof(GetInvalidJsonResponses))]
         public async Task GivenInvalidJsonResponse_WhenGetWeeklyAvailability_ThenHandleJsonException(string responseContent, string expectedInnerMessage)
@@ -106,11 +111,10 @@ namespace Docplanner.Infrastructure.Tests.Client
             httpTest
                 .ForCallsTo($"{BaseUrl}/GetWeeklyAvailability/20240311")
                 .WithVerb(HttpMethod.Get)
-                .WithHeader("Authorization", AuthHeader)
                 .RespondWith(responseContent, 200);
 
             var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
-                await _client.GetWeeklyAvailabilityAsync(new DateOnly(2024, 3, 11), AuthHeader)
+                await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 11))
             );
 
             Assert.Contains(expectedInnerMessage, exception.InnerException?.Message);
