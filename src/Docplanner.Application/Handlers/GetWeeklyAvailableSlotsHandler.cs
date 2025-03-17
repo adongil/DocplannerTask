@@ -9,16 +9,16 @@ namespace Docplanner.Application.Handlers
 {
     public class GetWeeklyAvailableSlotsHandler : IRequestHandler<GetWeeklyAvailableSlotsCommand, AvailableSlotsDTO>
     {
-        private readonly ISlotService _availavilityService;
+        private readonly ISlotService _slotService;
 
         public GetWeeklyAvailableSlotsHandler(ISlotService availavilityService)
         {
-            _availavilityService = availavilityService;
+            _slotService = availavilityService;
         }
 
         public async Task<AvailableSlotsDTO> Handle(GetWeeklyAvailableSlotsCommand request, CancellationToken cancellationToken)
         {
-            var response = await _availavilityService.GetAvailableWeekSlotsAsync(request.Date);
+            var response = await _slotService.GetAvailableWeekSlotsAsync(request.Date);
 
             if (response == null)
             {

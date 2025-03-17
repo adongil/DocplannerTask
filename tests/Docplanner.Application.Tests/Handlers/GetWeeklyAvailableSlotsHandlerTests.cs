@@ -10,13 +10,13 @@ namespace Docplanner.Application.Tests
 {
     public class GetWeeklyAvailableSlotsHandlerTests
     {
-        private readonly ISlotService _availavilityServiceMock;
+        private readonly ISlotService _slotServiceMock;
         private readonly GetWeeklyAvailableSlotsHandler _handler;
 
         public GetWeeklyAvailableSlotsHandlerTests()
         {
-            _availavilityServiceMock = Substitute.For<ISlotService>();
-            _handler = new GetWeeklyAvailableSlotsHandler(_availavilityServiceMock);
+            _slotServiceMock = Substitute.For<ISlotService>();
+            _handler = new GetWeeklyAvailableSlotsHandler(_slotServiceMock);
         }
 
         [Fact]
@@ -24,16 +24,16 @@ namespace Docplanner.Application.Tests
         {
             // Arrange
             var date = new DateOnly(2023, 11, 20);
-            _availavilityServiceMock
-                .GetAvailableWeekSlotsAsync(Arg.Any<DateOnly>())
-                .Returns(new AvailableSlotsDTO(It.IsAny<DateOnly>(), null));
+            _slotServiceMock
+                .GetAvailableWeekSlotsAsync(date)
+                .Returns(new AvailableSlotsDTO("FacilityId",date, new List<DaySlotsDTO>()));
             var command = new GetWeeklyAvailableSlotsCommand(date);
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            await _availavilityServiceMock
+            await _slotServiceMock
                 .Received(1)
                 .GetAvailableWeekSlotsAsync(Arg.Any<DateOnly>());
         }
@@ -43,9 +43,9 @@ namespace Docplanner.Application.Tests
         {
             // Arrange
             var date = new DateOnly(2023, 11, 20);
-            _availavilityServiceMock
-                .GetAvailableWeekSlotsAsync(Arg.Any<DateOnly>())
-                .Returns(It.IsAny<AvailableSlotsDTO>());
+            _slotServiceMock
+                .GetAvailableWeekSlotsAsync(date)
+                .Returns((AvailableSlotsDTO?)null);
 
             var command = new GetWeeklyAvailableSlotsCommand(date);
 
@@ -62,6 +62,7 @@ namespace Docplanner.Application.Tests
             // Arrange
             var date = new DateOnly(2023, 11, 20);
             var expectedAvailableSlotsDTO = new AvailableSlotsDTO(
+                "FacilityId",
                 date,
                 new List<DaySlotsDTO>
                 {
@@ -70,9 +71,9 @@ namespace Docplanner.Application.Tests
                 }
             );
 
-            _availavilityServiceMock
-                .GetAvailableWeekSlotsAsync(Arg.Any<DateOnly>())
-                .Returns(Task.FromResult(expectedAvailableSlotsDTO));
+            _slotServiceMock
+                 .GetAvailableWeekSlotsAsync(date)
+                 .Returns(expectedAvailableSlotsDTO);
 
             var command = new GetWeeklyAvailableSlotsCommand(date);
 
@@ -83,8 +84,17 @@ namespace Docplanner.Application.Tests
             Assert.NotNull(result);
             Assert.Equal(expectedAvailableSlotsDTO.Date, result.Date);
             Assert.Equal(expectedAvailableSlotsDTO.Days.Count, result.Days.Count);
-            Assert.Equal("Monday", result.Days[0].Day);
-            Assert.Equal("Tuesday", result.Days[1].Day);
+            Assert.Collection(result.Days,
+                day1 =>
+                {
+                    Assert.Equal("Monday", day1.Day);
+                    Assert.Equal(expectedAvailableSlotsDTO.Days[0].AvailableTimeSlots, day1.AvailableTimeSlots);
+                },
+                day2 =>
+                {
+                    Assert.Equal("Tuesday", day2.Day);
+                    Assert.Equal(expectedAvailableSlotsDTO.Days[1].AvailableTimeSlots, day2.AvailableTimeSlots);
+                });
         }
     }
 }

@@ -50,7 +50,7 @@ namespace Docplanner.Application.Services
 
             _logger.LogInformation("Successfully fetched available slots for date: {Date}, number of days fetched with available slots {NumDays}", date, availableWeekSlots.Count);
 
-            return new AvailableSlotsDTO(date, availableWeekSlots);
+            return new AvailableSlotsDTO(availabilityResponse.Facility.FacilityId, date, availableWeekSlots);
         }
 
 

@@ -4,15 +4,15 @@ using MediatR;
 
 public class PostTakeSlotHandler : IRequestHandler<PostTakeSlotCommand, bool>
 {
-    private readonly ISlotService _availavilityService;
+    private readonly ISlotService _slotService;
 
     public PostTakeSlotHandler(ISlotService availavilityService)
     {
-        _availavilityService = availavilityService;
+        _slotService = availavilityService;
     }
 
     public async Task<bool> Handle(PostTakeSlotCommand request, CancellationToken cancellationToken)
     {
-        return await _availavilityService.TakeSlot(request.Slot);
+        return await _slotService.TakeSlot(request.Slot);
     }
 }

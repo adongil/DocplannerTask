@@ -10,9 +10,11 @@ namespace Docplanner.API.Routes
 {
     public static class Routing
     {
+        private static readonly JsonSerializerOptions JsonOptions = new();
+
         public static void MapSlotsEndpoints(this IEndpointRouteBuilder app)
         {
-            app.MapGet("/api/slots/{date:}", async (string date, IMediator mediator) =>
+            app.MapGet("/api/availability/{date}", async (string date, IMediator mediator) =>
             {
                 try
                 {
@@ -28,39 +30,43 @@ namespace Docplanner.API.Routes
                 }
                 catch (AppException ex)
                 {
-                    return Results.Json(new { message = ex.Message }, new JsonSerializerOptions(), null, ex.StatusCode);
+                    return Results.Json(new { message = ex.Message }, JsonOptions, null, ex.StatusCode);
                 }
                 catch (Exception ex)
                 {
-                    return Results.Json(new { message = ex.Message }, new JsonSerializerOptions(), null, 500);
+                    return Results.Json(new { message = ex.Message }, JsonOptions, null, 500);
                 }
             })
             .RequireAuthorization()
-            .WithMetadata(new SwaggerParameterAttribute
-            {
-                 Description = "Date in yyyyMMdd format",
-            });
+            .WithMetadata(new SwaggerOperationAttribute(
+                summary: "Get available slots for a given week",
+                description: "Date format: yyyyMMdd"));
 
 
-            app.MapPost("/api/slots/take", async (SlotDTO slotRequest, IMediator mediator) =>
+
+            app.MapPost("/api/bookings", async (SlotDTO slotRequest, IMediator mediator) =>
             {
                 try
                 {
                     var command = new PostTakeSlotCommand(slotRequest);
                     var result = await mediator.Send(command);
+
                     return result ? Results.Ok(new { message = "Slot taken successfully." })
                                   : Results.BadRequest(new { message = "Failed to take the slot." });
                 }
                 catch (AppException ex)
                 {
-                    return Results.Json(new { message = ex.Message }, new JsonSerializerOptions(), null, ex.StatusCode);
+                    return Results.Json(new { message = ex.Message }, JsonOptions, null, ex.StatusCode);
                 }
                 catch (Exception ex)
                 {
-                    return Results.Json(new { message = ex.Message }, new JsonSerializerOptions(), null, 500);
+                    return Results.Json(new { message = $"Unexpected error: {ex.Message}" }, JsonOptions, null, 500);
                 }
             })
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .WithMetadata(new SwaggerOperationAttribute(
+                summary: "Take a slot",
+                description: "Reserve a slot with patient details."));
         }
     }
 }

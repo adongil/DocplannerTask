@@ -32,7 +32,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 14);
             var mockResponse = new AvailavilityServiceResponse(
-                new Facility("Test Facility", "Test Address"), 60
+                new Facility("FacilityId", "Test Facility", "Test Address"), 60
             );
             _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate)
                 .Returns(mockResponse);
@@ -63,7 +63,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
+                new Facility("FacilityId", "Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
                 {
                     RawDays = new Dictionary<string, JsonElement>
@@ -95,7 +95,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
+                new Facility("FacilityId", "Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
                 RawDays = new Dictionary<string, JsonElement>
@@ -127,7 +127,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
+                new Facility("FacilityId", "Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
                 RawDays = new Dictionary<string, JsonElement>
@@ -165,7 +165,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
+                new Facility("FacilityId", "Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
                 RawDays = new Dictionary<string, JsonElement>
@@ -192,7 +192,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
+                new Facility("FacilityId", "Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
                 RawDays = new Dictionary<string, JsonElement>
@@ -229,7 +229,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
+                new Facility("FacilityId", "Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60) 
             {
                 RawDays = new Dictionary<string, JsonElement>
@@ -256,7 +256,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
+                new Facility("FacilityId", "Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 -30) 
             {
                 RawDays = new Dictionary<string, JsonElement>
@@ -283,7 +283,7 @@ namespace Docplanner.Application.Tests.Services
             // Arrange
             var requestedDate = new DateOnly(2024, 3, 10);
             var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
+                new Facility("FacilityId", "Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
                 RawDays = new Dictionary<string, JsonElement>
