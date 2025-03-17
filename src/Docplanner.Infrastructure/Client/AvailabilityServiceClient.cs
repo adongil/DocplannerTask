@@ -5,6 +5,7 @@ using Docplanner.Infrastructure.Exceptions;
 using Flurl.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 
@@ -12,17 +13,24 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
 {
     private readonly string _baseUrl;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly ILogger<AvailabilityServiceClient> _logger;
 
-    public AvailabilityServiceClient(IConfiguration configuration, IHttpContextAccessor httpContextAccessor)
+    public AvailabilityServiceClient(
+        IConfiguration configuration, 
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<AvailabilityServiceClient> logger)
     {
         _baseUrl = configuration["SlotService:BaseUrl"] ?? throw new ArgumentNullException(nameof(configuration));
         _httpContextAccessor = httpContextAccessor;
+        _logger = logger;
     }
 
     public async Task<AvailavilityServiceResponse> GetWeeklyAvailableSlots(DateOnly date)
     {
         try
         {
+            _logger.LogInformation("Getting weekly availability for {Date}", date);
+
             var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
 
             if (string.IsNullOrEmpty(authHeader))
@@ -34,6 +42,8 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
             var responseString = await url
                 .WithHeader("Authorization", authHeader)
                 .GetStringAsync();
+
+            _logger.LogInformation("Weekly availability retrieved successfully for {Date} and response {Response}", date, responseString);
 
             return JsonSerializer.Deserialize<AvailavilityServiceResponse>(responseString)!;
         }
@@ -65,6 +75,8 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
     {
         try
         {
+            _logger.LogInformation("Taking slot for {Slot}", slot);
+
             var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
 
             if (string.IsNullOrEmpty(authHeader))
@@ -80,8 +92,12 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
 
             if ((int)response.StatusCode == (int)HttpStatusCode.OK)
             {
+                _logger.LogInformation("Slot taken successfully for {Slot}", slot);
+
                 return true; 
             }
+
+            _logger.LogWarning("Failed to take slot for {Slot}", slot);
 
             return false; 
         }

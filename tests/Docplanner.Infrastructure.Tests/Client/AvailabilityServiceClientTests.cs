@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using Docplanner.Infrastructure.Exceptions;
 using Docplanner.Domain.DTO.Request;
 using Moq;
+using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Docplanner.Infrastructure.Tests.Client
 {
@@ -15,9 +17,12 @@ namespace Docplanner.Infrastructure.Tests.Client
     {
         private const string BaseUrl = "https://mocked-url.com/api/availability";
         private readonly AvailabilityServiceClient _client;
+        private readonly ILogger<AvailabilityServiceClient> _logger;
 
         public AvailabilityServiceClientTests()
         {
+            _logger = Substitute.For<ILogger<AvailabilityServiceClient>>();
+
             var configuration = Substitute.For<IConfiguration>();
             configuration["SlotService:BaseUrl"].Returns(BaseUrl);
             
@@ -30,7 +35,7 @@ namespace Docplanner.Infrastructure.Tests.Client
             httpContext.Request.Headers.Returns(headers);
             httpContextAccessor.HttpContext.Returns(httpContext); 
             
-            _client = new AvailabilityServiceClient(configuration, httpContextAccessor);
+            _client = new AvailabilityServiceClient(configuration, httpContextAccessor, _logger);
         }
 
         [Fact]

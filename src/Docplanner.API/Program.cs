@@ -6,6 +6,10 @@ using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Logging.ClearProviders();  
+builder.Logging.AddConsole();  
+builder.Logging.AddDebug();  
+
 builder.Services.AddAuth();
 builder.Services.AddSwagger();
 builder.Services.AddMediatRServices();
