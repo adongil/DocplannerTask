@@ -54,7 +54,7 @@ namespace Docplanner.Application.Services
         }
 
 
-        private DaySlotsDTO CreateDaySlots(DateOnly date ,AvailavilityServiceResponse availabilityResponse, DayOfWeek dayOfWeek, DailyAvailability dailyAvailability)
+        private DaySlotsDTO CreateDaySlots(DateOnly date, AvailavilityServiceResponse availabilityResponse, DayOfWeek dayOfWeek, DailyAvailability dailyAvailability)
         {
             var availableDate = date.AddDays((int)dayOfWeek - 1);
 
@@ -68,6 +68,17 @@ namespace Docplanner.Application.Services
 
         private List<DateTime> GenerateDailyTimeSlots(DateOnly date, WorkPeriod workPeriod, int slotDurationMinutes)
         {
+            if (slotDurationMinutes <= 0)
+            {
+                _logger.LogWarning("Invalid slot duration: {SlotDurationMinutes}. No slots will be generated.", slotDurationMinutes);
+                return new List<DateTime>(); 
+            }
+
+            if (!IsValidWorkPeriod(workPeriod))
+            {
+                return new List<DateTime>();  
+            }
+
             var dailySlots = new List<DateTime>();
 
             var startHour = new DateTime(date.Year, date.Month, date.Day, workPeriod.StartHour, 0, 0);
@@ -92,6 +103,24 @@ namespace Docplanner.Application.Services
                 .ToList();
 
             return filteredSlots;
+        }
+
+
+        private bool IsValidWorkPeriod(WorkPeriod workPeriod)
+        {
+            if (workPeriod.StartHour < 0 || workPeriod.EndHour < 0)
+            {
+                _logger.LogWarning("Invalid work period: negative hours detected. StartHour: {Start}, EndHour: {End}", workPeriod.StartHour, workPeriod.EndHour);
+                return false;
+            }
+
+            if (workPeriod.StartHour >= workPeriod.EndHour)
+            {
+                _logger.LogWarning("Invalid work period: StartHour must be before EndHour. StartHour: {Start}, EndHour: {End}", workPeriod.StartHour, workPeriod.EndHour);
+                return false;
+            }
+
+            return true;
         }
     }
 }
