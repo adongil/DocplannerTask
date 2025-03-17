@@ -3,7 +3,7 @@ using Docplanner.Domain.DTO.Response;
 
 namespace Docplanner.Application.Services
 {
-    public interface IAvailavilityService
+    public interface ISlotService
     {
         Task<AvailableSlotsDTO?> GetAvailableWeekSlotsAsync(DateOnly date);
         Task<bool> TakeSlot(SlotDTO slot);

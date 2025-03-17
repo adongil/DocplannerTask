@@ -4,9 +4,9 @@ using MediatR;
 
 public class PostTakeSlotHandler : IRequestHandler<PostTakeSlotCommand, bool>
 {
-    private readonly IAvailavilityService _availavilityService;
+    private readonly ISlotService _availavilityService;
 
-    public PostTakeSlotHandler(IAvailavilityService availavilityService)
+    public PostTakeSlotHandler(ISlotService availavilityService)
     {
         _availavilityService = availavilityService;
     }

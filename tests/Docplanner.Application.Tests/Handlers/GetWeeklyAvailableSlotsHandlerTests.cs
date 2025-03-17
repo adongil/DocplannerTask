@@ -10,12 +10,12 @@ namespace Docplanner.Application.Tests
 {
     public class GetWeeklyAvailableSlotsHandlerTests
     {
-        private readonly IAvailavilityService _availavilityServiceMock;
+        private readonly ISlotService _availavilityServiceMock;
         private readonly GetWeeklyAvailableSlotsHandler _handler;
 
         public GetWeeklyAvailableSlotsHandlerTests()
         {
-            _availavilityServiceMock = Substitute.For<IAvailavilityService>();
+            _availavilityServiceMock = Substitute.For<ISlotService>();
             _handler = new GetWeeklyAvailableSlotsHandler(_availavilityServiceMock);
         }
 

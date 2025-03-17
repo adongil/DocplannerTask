@@ -9,9 +9,9 @@ namespace Docplanner.Application.Handlers
 {
     public class GetWeeklyAvailableSlotsHandler : IRequestHandler<GetWeeklyAvailableSlotsCommand, AvailableSlotsDTO>
     {
-        private readonly IAvailavilityService _availavilityService;
+        private readonly ISlotService _availavilityService;
 
-        public GetWeeklyAvailableSlotsHandler(IAvailavilityService availavilityService)
+        public GetWeeklyAvailableSlotsHandler(ISlotService availavilityService)
         {
             _availavilityService = availavilityService;
         }

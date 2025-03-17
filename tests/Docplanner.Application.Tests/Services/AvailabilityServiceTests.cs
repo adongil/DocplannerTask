@@ -1,8 +1,10 @@
-﻿using Docplanner.Application.Services;
+﻿using Castle.Core.Logging;
+using Docplanner.Application.Services;
 using Docplanner.Domain.AvailavilityService;
 using Docplanner.Domain.DTO.Request;
 using Docplanner.Infrastructure.Client;
 using Docplanner.Infrastructure.Exceptions;
+using Microsoft.Extensions.Logging;
 using Moq;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -13,13 +15,15 @@ namespace Docplanner.Application.Tests.Services
     public class AvailabilityServiceTests
     {
         private readonly IAvailabilityServiceClient _availabilityServiceClient;
-        private readonly AvailavilityService _availabilityService;
+        private readonly SlotService _availabilityService;
         private const string AuthHeader = "Basic VGVjaHVzZXI6c2VjcmV0cGFzc1dvcmQ=";
+        private readonly ILogger<SlotService> _logger;
 
         public AvailabilityServiceTests()
         {
+            _logger = Substitute.For<ILogger<SlotService>>();
             _availabilityServiceClient = Substitute.For<IAvailabilityServiceClient>();
-            _availabilityService = new AvailavilityService(_availabilityServiceClient);
+            _availabilityService = new SlotService(_availabilityServiceClient, _logger);
         }
 
 

@@ -7,7 +7,7 @@ namespace Docplanner.API.DependencyInjection
     {
         public static void AddApplicationServices(this IServiceCollection services)
         {
-            services.AddTransient<IAvailavilityService, AvailavilityService>();
+            services.AddTransient<ISlotService, SlotService>();
             services.AddTransient<IAvailabilityServiceClient, AvailabilityServiceClient>();
             services.AddTransient<IHttpContextAccessor, HttpContextAccessor>();
         }
