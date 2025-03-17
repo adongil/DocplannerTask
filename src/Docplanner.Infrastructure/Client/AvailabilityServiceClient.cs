@@ -73,9 +73,51 @@ namespace Docplanner.Infrastructure.Client
             }
         }
 
-        public Task<bool> TakeSlotAsync(SlotDTO slot)
+
+        public async Task<bool> TakeSlotAsync(SlotDTO slot)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
+
+                if (string.IsNullOrEmpty(authHeader))
+                {
+                    throw new UnauthorizedAccessException("Authorization header is missing or invalid.");
+                }
+
+                var url = $"{_baseUrl}/TakeSlot";
+
+                var response = await url
+                    .WithHeader("Authorization", authHeader)
+                    .PostJsonAsync(slot);
+
+                if ((int)response.StatusCode == (int)HttpStatusCode.OK)
+                {
+                    return true; 
+                }
+
+                return false; 
+            }
+            catch (FlurlHttpException ex) when (ex.StatusCode == (int)HttpStatusCode.BadRequest)
+            {
+                throw new HttpRequestException("Bad Request: The request was invalid.", ex);
+            }
+            catch (FlurlHttpException ex) when (ex.StatusCode == (int)HttpStatusCode.Unauthorized)
+            {
+                throw new HttpRequestException("Unauthorized: Authentication failed.", ex);
+            }
+            catch (FlurlHttpException ex) when (ex.StatusCode == (int)HttpStatusCode.NotFound)
+            {
+                throw new HttpRequestException("Not Found: The requested resource could not be found.", ex);
+            }
+            catch (FlurlHttpException ex) when (ex.StatusCode == (int)HttpStatusCode.InternalServerError)
+            {
+                throw new HttpRequestException("Internal Server Error: There was a problem with the server.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new HttpRequestException("An unexpected error occurred.", ex);
+            }
         }
     }
 }

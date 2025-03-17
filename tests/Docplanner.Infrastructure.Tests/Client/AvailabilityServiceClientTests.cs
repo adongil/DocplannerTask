@@ -6,6 +6,8 @@ using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using Microsoft.AspNetCore.Http;
 using Docplanner.Infrastructure.Exceptions;
+using Docplanner.Domain.DTO.Request;
+using Moq;
 
 namespace Docplanner.Infrastructure.Tests.Client
 {
@@ -120,6 +122,29 @@ namespace Docplanner.Infrastructure.Tests.Client
 
             Assert.Contains(expectedInnerMessage, exception.InnerException?.Message);
         }
+
+
+        [Fact]
+        public async Task GivenValidSlotDetails_WhenTakeSlotIsCalled_ThenMakeHttpRequestOnce()
+        {
+            // Arrange
+            using var httpTest = new HttpTest();
+            httpTest.RespondWith(string.Empty, (int)HttpStatusCode.OK);  
+
+            // Act
+            var result = await _client.TakeSlotAsync(It.IsAny<SlotDTO>());
+
+            // Assert
+            httpTest.ShouldHaveCalled(BaseUrl+ "/TakeSlot") 
+                .WithVerb(HttpMethod.Post)  
+                .Times(1);  
+
+            Assert.True(result);  
+        }
+    
+
+
+
 
         private string GetAvailavilityServiceMockedJsonResponse()
         {
