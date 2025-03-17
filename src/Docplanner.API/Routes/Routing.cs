@@ -1,4 +1,5 @@
 ﻿using Docplanner.Application.Commands;
+using Docplanner.Domain.DTO.Request;
 using Docplanner.Infrastructure.Exceptions;
 using MediatR;
 using Swashbuckle.AspNetCore.Annotations;
@@ -35,10 +36,31 @@ namespace Docplanner.API.Routes
                 }
             })
             .RequireAuthorization()
-             .WithMetadata(new SwaggerParameterAttribute
-             {
+            .WithMetadata(new SwaggerParameterAttribute
+            {
                  Description = "Date in yyyyMMdd format",
-             }); 
+            });
+
+
+            app.MapPost("/api/slots/take", async (SlotDTO slotRequest, IMediator mediator) =>
+            {
+                try
+                {
+                    var command = new PostTakeSlotCommand(slotRequest);
+                    var result = await mediator.Send(command);
+                    return result ? Results.Ok(new { message = "Slot taken successfully." })
+                                  : Results.BadRequest(new { message = "Failed to take the slot." });
+                }
+                catch (AppException ex)
+                {
+                    return Results.Json(new { message = ex.Message }, new JsonSerializerOptions(), null, ex.StatusCode);
+                }
+                catch (Exception ex)
+                {
+                    return Results.Json(new { message = ex.Message }, new JsonSerializerOptions(), null, 500);
+                }
+            })
+            .RequireAuthorization();
         }
     }
 }

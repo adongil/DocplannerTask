@@ -1,8 +1,11 @@
 ﻿using Docplanner.Application.Services;
 using Docplanner.Domain.AvailavilityService;
+using Docplanner.Domain.DTO.Request;
 using Docplanner.Infrastructure.Client;
+using Docplanner.Infrastructure.Exceptions;
 using Moq;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using System.Text.Json;
 
 namespace Docplanner.Application.Tests.Services
@@ -204,6 +207,63 @@ namespace Docplanner.Application.Tests.Services
             Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
         }
 
+        [Fact]
+        public async Task GivenValidSlotDetails_WhenTakeSlotIsCalled_ThenTakeSlotAsyncIsCalledOnce()
+        {
+            // Arrange
+            _availabilityServiceClient.TakeSlotAsync(It.IsAny<SlotDTO>()).Returns(It.IsAny<bool>());
 
+            // Act
+            await _availabilityService.TakeSlot(It.IsAny<SlotDTO>());
+
+            // Assert
+            await _availabilityServiceClient.Received(1).TakeSlotAsync(It.IsAny<SlotDTO>());
+        }
+
+        [Fact]
+        public async Task GivenValidSlotDetails_WhenTakeSlotIsCalled_ThenReturnsTrue()
+        {
+            // Arrange
+            var slot = new SlotDTO
+            {
+                Start = "2024-03-11 09:00:00",
+                End = "2024-03-11 10:00:00",
+                Comments = "arm pain",
+                Patient = new PatientDTO
+                {
+                    Name = "Mario",
+                    SecondName = "Neta",
+                    Email = "mario.neta@example.com",
+                    Phone = "555 44 33 22"
+                }
+            };
+
+            _availabilityServiceClient.TakeSlotAsync(slot).Returns(true);
+
+            // Act
+            var result = await _availabilityService.TakeSlot(slot);
+
+            // Assert
+            Assert.True(result);
+        }
+
+
+        [Fact]
+        public async Task GivenErrorWhenCallingTakeSlot_WhenTakeSlotFails_ThenExceptionIsForwarded()
+        {
+            // Arrange
+            _availabilityServiceClient.TakeSlotAsync(It.IsAny<SlotDTO>()).Throws(new AppException("Error message",500));
+
+            // Act
+            var exception = await Assert.ThrowsAsync<AppException>(async () =>
+                await _availabilityService.TakeSlot(It.IsAny<SlotDTO>()));
+
+            // Assert
+            Assert.Equal("Error message",exception.Message);
+            Assert.Equal(500, exception.StatusCode);
+        }
     }
+
+
 }
+

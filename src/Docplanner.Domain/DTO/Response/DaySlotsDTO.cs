@@ -1,4 +1,4 @@
-﻿namespace Docplanner.Domain.DTO
+﻿namespace Docplanner.Domain.DTO.Response
 {
     public record DaySlotsDTO(
         string Day,

@@ -1,6 +1,6 @@
 ﻿using Docplanner.Application.Commands;
 using Docplanner.Application.Services;
-using Docplanner.Domain.DTO;
+using Docplanner.Domain.DTO.Response;
 using Docplanner.Infrastructure.Exceptions;
 using MediatR;
 using System.Net;

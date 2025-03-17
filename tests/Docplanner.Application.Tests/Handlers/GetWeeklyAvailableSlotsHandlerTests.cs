@@ -1,10 +1,10 @@
 ﻿using Docplanner.Application.Commands;
 using Docplanner.Application.Handlers;
 using Docplanner.Application.Services;
-using Docplanner.Domain.DTO;
 using NSubstitute;
 using Docplanner.Infrastructure.Exceptions;
 using Moq;
+using Docplanner.Domain.DTO.Response;
 
 namespace Docplanner.Application.Tests
 {

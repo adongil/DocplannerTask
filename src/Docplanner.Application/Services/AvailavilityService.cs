@@ -1,7 +1,10 @@
 ﻿using Docplanner.Domain.AvailavilityService;
-using Docplanner.Domain.DTO;
+using Docplanner.Domain.DTO.Request;
+using Docplanner.Domain.DTO.Response;
 using Docplanner.Infrastructure.Client;
+using Docplanner.Infrastructure.Exceptions;
 using System;
+using System.Xml.Linq;
 
 namespace Docplanner.Application.Services
 {
@@ -13,6 +16,13 @@ namespace Docplanner.Application.Services
         {
             _availabilityServiceClient = availabilityServiceClient;
         }
+
+        public async Task<bool> TakeSlot(SlotDTO slot)
+        {
+            var result = await _availabilityServiceClient.TakeSlotAsync(slot);
+            return result; 
+        }
+
 
         public async Task<AvailableSlotsDTO?> GetAvailableWeekSlotsAsync(DateOnly date)
         {
@@ -75,6 +85,7 @@ namespace Docplanner.Application.Services
 
             return filteredSlots;
         }
+
 
     }
 }

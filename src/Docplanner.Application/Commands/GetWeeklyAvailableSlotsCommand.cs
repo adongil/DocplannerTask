@@ -1,4 +1,4 @@
-﻿using Docplanner.Domain.DTO;
+﻿using Docplanner.Domain.DTO.Response;
 using MediatR;
 
 namespace Docplanner.Application.Commands

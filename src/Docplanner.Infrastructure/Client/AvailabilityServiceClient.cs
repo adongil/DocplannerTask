@@ -5,6 +5,7 @@ using Docplanner.Domain.AvailavilityService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using Docplanner.Infrastructure.Exceptions;
+using Docplanner.Domain.DTO.Request;
 
 namespace Docplanner.Infrastructure.Client
 {
@@ -70,6 +71,11 @@ namespace Docplanner.Infrastructure.Client
             {
                 throw new AppException("An unexpected error occurred.", 500, ex);
             }
+        }
+
+        public Task<bool> TakeSlotAsync(SlotDTO slot)
+        {
+            throw new NotImplementedException();
         }
     }
 }
