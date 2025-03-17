@@ -29,8 +29,6 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
     {
         try
         {
-            _logger.LogInformation("Getting weekly availability for {Date}", date);
-
             var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
 
             if (string.IsNullOrEmpty(authHeader))
@@ -39,6 +37,9 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
             }
 
             var url = $"{_baseUrl}/GetWeeklyAvailability/{date:yyyyMMdd}";
+
+            _logger.LogInformation("Getting weekly availability for {Date} in url {Url}", date, url);
+
             var responseString = await url
                 .WithHeader("Authorization", authHeader)
                 .GetStringAsync();
@@ -54,6 +55,7 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
                 var errorResponse = await ex.GetResponseStringAsync();
                 if (errorResponse.Contains("datetime must be a Monday"))
                 {
+                    _logger.LogError("Datetime must be a Monday. {Exception}", ex);
                     throw new AppException("Datetime must be a Monday.", 400, ex);
                 }
             }
@@ -62,10 +64,12 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
         }
         catch (JsonException ex)
         {
+            _logger.LogError("Invalid JSON response format. {Exception}", ex);
             throw new AppException("Invalid JSON response format.", 400, ex);
         }
         catch (Exception ex)
         {
+            _logger.LogError("An unexpected error occurred. {Exception}", ex);
             throw new AppException("An unexpected error occurred.", 500, ex);
         }
     }
@@ -75,8 +79,6 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
     {
         try
         {
-            _logger.LogInformation("Taking slot for {Slot}", slot);
-
             var authHeader = _httpContextAccessor.HttpContext?.Request.Headers["Authorization"].ToString();
 
             if (string.IsNullOrEmpty(authHeader))
@@ -85,6 +87,8 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
             }
 
             var url = $"{_baseUrl}/TakeSlot";
+
+            _logger.LogInformation("Taking slot for {Slot} in url {Url}", slot, url);
 
             var response = await url
                 .WithHeader("Authorization", authHeader)
@@ -107,6 +111,7 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
         }
         catch (Exception ex)
         {
+            _logger.LogError("An unexpected error occurred. {Exception}", ex);
             throw new AppException("An unexpected error occurred.", 500, ex);
         }
     }
@@ -116,18 +121,23 @@ public class AvailabilityServiceClient : IAvailabilityServiceClient
         switch (ex.StatusCode)
         {
             case (int)HttpStatusCode.BadRequest:
+                _logger.LogError("Bad Request: The request was invalid. {Exception}", ex);
                 throw new AppException("Bad Request: The request was invalid.", 400, ex);
 
             case (int)HttpStatusCode.Unauthorized:
+                _logger.LogError("Unauthorized: Authentication failed. {Exception}", ex);
                 throw new AppException("Unauthorized: Authentication failed.", 401, ex);
 
             case (int)HttpStatusCode.NotFound:
+                _logger.LogError("Not Found: The requested resource could not be found. {Exception}", ex);
                 throw new AppException("Not Found: The requested resource could not be found.", 404, ex);
 
             case (int)HttpStatusCode.InternalServerError:
+                _logger.LogError("Internal Server Error: There was a problem with the server. {Exception}", ex);
                 throw new AppException("Internal Server Error: There was a problem with the server.", 500, ex);
 
             default:
+                _logger.LogError("An unexpected error occurred. {Exception}", ex);
                 throw new AppException("An unexpected error occurred.", 500, ex);
         }
     }
