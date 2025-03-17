@@ -50,7 +50,7 @@ namespace Docplanner.Application.Tests.Services
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
                 {
-                    DayCandidate = new Dictionary<string, JsonElement>
+                    RawDays = new Dictionary<string, JsonElement>
                     {
                         { "Wednesday", JsonSerializer.SerializeToElement(new DailyAvailability(new WorkPeriod(9, 17, 0, 0), null)) }
                     }
@@ -82,7 +82,7 @@ namespace Docplanner.Application.Tests.Services
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
-                DayCandidate = new Dictionary<string, JsonElement>
+                RawDays = new Dictionary<string, JsonElement>
                     {
                         { "Tuesday", JsonSerializer.SerializeToElement(new DailyAvailability(new WorkPeriod(9, 17, 13, 14), null)) }
                     }
@@ -114,7 +114,7 @@ namespace Docplanner.Application.Tests.Services
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
-                DayCandidate = new Dictionary<string, JsonElement>
+                RawDays = new Dictionary<string, JsonElement>
                         {
                             { "Friday", JsonSerializer.SerializeToElement(new DailyAvailability(
                                 new WorkPeriod(9, 17, 13, 14),
@@ -152,7 +152,7 @@ namespace Docplanner.Application.Tests.Services
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
-                DayCandidate = new Dictionary<string, JsonElement>
+                RawDays = new Dictionary<string, JsonElement>
                 {
                     { "Tuesday", JsonSerializer.SerializeToElement(new DailyAvailability(
                         new WorkPeriod(0, 0, 0, 0), 
@@ -179,7 +179,7 @@ namespace Docplanner.Application.Tests.Services
                 new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
                 60)
             {
-                DayCandidate = new Dictionary<string, JsonElement>
+                RawDays = new Dictionary<string, JsonElement>
                 {
                     { "Tuesday", JsonSerializer.SerializeToElement(new DailyAvailability(
                         new WorkPeriod(9, 17, 13, 14),

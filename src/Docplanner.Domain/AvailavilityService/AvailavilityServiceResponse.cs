@@ -9,10 +9,10 @@ namespace Docplanner.Domain.AvailavilityService
         [property: JsonPropertyName("SlotDurationMinutes")] int SlotDurationMinutes)
     {
         [JsonExtensionData]
-        public Dictionary<string, JsonElement>? DayCandidate { get; init; }
+        public Dictionary<string, JsonElement>? RawDays { get; init; }
 
         public Dictionary<DayOfWeek, DailyAvailability> Days =>
-            DayCandidate?
+            RawDays?
                 .Where(p => Enum.TryParse<DayOfWeek>(p.Key, out _))
                 .ToDictionary(
                     p => Enum.Parse<DayOfWeek>(p.Key),
