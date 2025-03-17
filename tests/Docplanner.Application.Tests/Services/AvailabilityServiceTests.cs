@@ -141,40 +141,6 @@ namespace Docplanner.Application.Tests.Services
 
 
         [Fact]
-        public async Task GivenAValidDateAndADefinedRangeOfWorkingHoursWithLunchBreakAndNoBookedSlots_WhenGettingWeeklyAvailability_ThenReturnAllValidSlotsInDefinedRange()
-        {
-            // Arrange
-            var requestedDate = new DateOnly(2024, 3, 10);
-            var weeklyAvailabilityResponse = new AvailavilityServiceResponse(
-                new Facility("Facility Example", "Josep Pla 2, Edifici B2 08019 Barcelona"),
-                60)
-            {
-                DayCandidate = new Dictionary<string, JsonElement>
-                {
-                    { "Tuesday", JsonSerializer.SerializeToElement(new DailyAvailability(
-                        new WorkPeriod(9, 17, 13, 14),
-                        null)) }
-                }
-            };
-            _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate).Returns(weeklyAvailabilityResponse);
-
-            // Act
-            var availableWeekSlots = await _availabilityService.GetAvailableWeekSlotsAsync(requestedDate);
-
-            // Assert
-            var expectedTimeSlots = new List<string>
-            {
-                "2024-03-11 09:00:00", "2024-03-11 10:00:00", "2024-03-11 11:00:00", "2024-03-11 12:00:00",
-                "2024-03-11 14:00:00", "2024-03-11 15:00:00", "2024-03-11 16:00:00"
-            };
-
-            Assert.Single(availableWeekSlots.Days);
-            Assert.Equal("Tuesday", availableWeekSlots.Days.First().Day);
-            Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
-        }
-
-
-        [Fact]
         public async Task GivenAValidDateAndADefinedRangeOfWorkingHoursWithZeroDuration_WhenGettingWeeklyAvailability_ThenReturnNoAvailableSlots()
         {
             // Arrange

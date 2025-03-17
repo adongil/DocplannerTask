@@ -1,7 +1,9 @@
 ﻿using Docplanner.Application.Commands;
 using Docplanner.Application.Services;
 using Docplanner.Domain.DTO;
+using Docplanner.Infrastructure.Exceptions;
 using MediatR;
+using System.Net;
 
 namespace Docplanner.Application.Handlers
 {
@@ -16,7 +18,14 @@ namespace Docplanner.Application.Handlers
 
         public async Task<AvailableSlotsDTO> Handle(GetWeeklyAvailableSlotsCommand request, CancellationToken cancellationToken)
         {
-            return await _availavilityService.GetAvailableWeekSlotsAsync(request.Date);
+            var response = await _availavilityService.GetAvailableWeekSlotsAsync(request.Date);
+
+            if (response == null)
+            {
+                throw new AppException("No available slots found for the given week.", (int)HttpStatusCode.NotFound);
+            }
+
+            return response;
         }
     }
 }

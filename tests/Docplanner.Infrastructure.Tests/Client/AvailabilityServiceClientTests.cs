@@ -5,6 +5,7 @@ using Docplanner.Domain.AvailavilityService;
 using Microsoft.Extensions.Configuration;
 using NSubstitute;
 using Microsoft.AspNetCore.Http;
+using Docplanner.Infrastructure.Exceptions;
 
 namespace Docplanner.Infrastructure.Tests.Client
 {
@@ -41,7 +42,7 @@ namespace Docplanner.Infrastructure.Tests.Client
                 .WithVerb(HttpMethod.Get)
                 .RespondWith(invalidDateResponse, 400);
 
-            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            var exception = await Assert.ThrowsAsync<AppException>(async () =>
                 await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 12))
             );
 
@@ -90,7 +91,7 @@ namespace Docplanner.Infrastructure.Tests.Client
                 .WithVerb(HttpMethod.Get)
                 .RespondWith(string.Empty, (int)statusCode);
 
-            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            var exception = await Assert.ThrowsAsync<AppException>(async () =>
                 await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 11))
             );
 
@@ -113,7 +114,7 @@ namespace Docplanner.Infrastructure.Tests.Client
                 .WithVerb(HttpMethod.Get)
                 .RespondWith(responseContent, 200);
 
-            var exception = await Assert.ThrowsAsync<HttpRequestException>(async () =>
+            var exception = await Assert.ThrowsAsync<AppException>(async () =>
                 await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 11))
             );
 

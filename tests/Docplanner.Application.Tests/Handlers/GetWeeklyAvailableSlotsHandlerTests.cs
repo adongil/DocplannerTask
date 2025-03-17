@@ -2,19 +2,21 @@
 using Docplanner.Application.Handlers;
 using Docplanner.Application.Services;
 using Docplanner.Domain.DTO;
+using NSubstitute;
+using Docplanner.Infrastructure.Exceptions;
 using Moq;
 
-namespace Docplanner.Application.Tests.Handlers
+namespace Docplanner.Application.Tests
 {
     public class GetWeeklyAvailableSlotsHandlerTests
     {
-        private readonly Mock<IAvailavilityService> _availavilityServiceMock;
+        private readonly IAvailavilityService _availavilityServiceMock;
         private readonly GetWeeklyAvailableSlotsHandler _handler;
 
         public GetWeeklyAvailableSlotsHandlerTests()
         {
-            _availavilityServiceMock = new Mock<IAvailavilityService>();
-            _handler = new GetWeeklyAvailableSlotsHandler(_availavilityServiceMock.Object);
+            _availavilityServiceMock = Substitute.For<IAvailavilityService>();
+            _handler = new GetWeeklyAvailableSlotsHandler(_availavilityServiceMock);
         }
 
         [Fact]
@@ -22,35 +24,40 @@ namespace Docplanner.Application.Tests.Handlers
         {
             // Arrange
             var date = new DateOnly(2023, 11, 20);
+            _availavilityServiceMock
+                .GetAvailableWeekSlotsAsync(Arg.Any<DateOnly>())
+                .Returns(new AvailableSlotsDTO(It.IsAny<DateOnly>(), null));
             var command = new GetWeeklyAvailableSlotsCommand(date);
 
             // Act
             await _handler.Handle(command, CancellationToken.None);
 
             // Assert
-            _availavilityServiceMock.Verify(service => service.GetAvailableWeekSlotsAsync(It.IsAny<DateOnly>()), Times.Once);
+            await _availavilityServiceMock
+                .Received(1)
+                .GetAvailableWeekSlotsAsync(Arg.Any<DateOnly>());
         }
 
         [Fact]
-        public async Task GivenAValidGetWeeklyAvailableSlotsCommand_WhenServiceReturnsNull_ThenHandlerReturnsNull()
+        public async Task GivenAValidGetWeeklyAvailableSlotsCommand_WhenServiceReturnsNull_ThenHandlerThrowsAppException()
         {
             // Arrange
             var date = new DateOnly(2023, 11, 20);
             _availavilityServiceMock
-                .Setup(service => service.GetAvailableWeekSlotsAsync(It.IsAny<DateOnly>()))
-                .ReturnsAsync((AvailableSlotsDTO)null);
+                .GetAvailableWeekSlotsAsync(Arg.Any<DateOnly>())
+                .Returns(It.IsAny<AvailableSlotsDTO>());
 
             var command = new GetWeeklyAvailableSlotsCommand(date);
 
-            // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<AppException>(() => _handler.Handle(command, CancellationToken.None));
 
-            // Assert
-            Assert.Null(result);
+            Assert.Equal("No available slots found for the given week.", exception.Message);
+            Assert.Equal(404, exception.StatusCode);  
         }
 
         [Fact]
-        public async Task GivenAValidGetWeeklyAvailableSlotsCommand_WhenHandlerIsExecuted_ThenItReturnsAvailableSlotsDTO()
+        public async Task GivenAValidGetWeeklyAvailableSlotsCommand_WhenServiceReturnsSlots_ThenHandlerReturnsAvailableSlotsDTO()
         {
             // Arrange
             var date = new DateOnly(2023, 11, 20);
@@ -64,8 +71,8 @@ namespace Docplanner.Application.Tests.Handlers
             );
 
             _availavilityServiceMock
-                .Setup(service => service.GetAvailableWeekSlotsAsync(It.IsAny<DateOnly>()))
-                .ReturnsAsync(expectedAvailableSlotsDTO);
+                .GetAvailableWeekSlotsAsync(Arg.Any<DateOnly>())
+                .Returns(Task.FromResult(expectedAvailableSlotsDTO));
 
             var command = new GetWeeklyAvailableSlotsCommand(date);
 

@@ -14,13 +14,13 @@ namespace Docplanner.Application.Services
             _availabilityServiceClient = availabilityServiceClient;
         }
 
-        public async Task<AvailableSlotsDTO> GetAvailableWeekSlotsAsync(DateOnly date)
+        public async Task<AvailableSlotsDTO?> GetAvailableWeekSlotsAsync(DateOnly date)
         {
             var availabilityResponse = await _availabilityServiceClient.GetWeeklyAvailableSlots(date);
 
             if (availabilityResponse == null)
             {
-                return new AvailableSlotsDTO(date, new List<DaySlotsDTO>());
+                return null;
             }
 
             var availableWeekSlots = availabilityResponse.Days
