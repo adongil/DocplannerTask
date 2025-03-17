@@ -1,5 +1,4 @@
 ﻿using Flurl.Http.Testing;
-using Docplanner.Infrastructure.Client;
 using System.Net;
 using Docplanner.Domain.AvailavilityService;
 using Microsoft.Extensions.Configuration;
@@ -8,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Docplanner.Infrastructure.Exceptions;
 using Docplanner.Domain.DTO.Request;
 using Moq;
-using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Docplanner.Infrastructure.Tests.Client
@@ -53,6 +51,7 @@ namespace Docplanner.Infrastructure.Tests.Client
                 await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 12))
             );
 
+            Assert.Equal(400, exception.StatusCode);
             Assert.Contains("Datetime must be a Monday", exception.Message);
         }
 
@@ -100,6 +99,23 @@ namespace Docplanner.Infrastructure.Tests.Client
 
             var exception = await Assert.ThrowsAsync<AppException>(async () =>
                 await _client.GetWeeklyAvailableSlots(new DateOnly(2024, 3, 11))
+            );
+
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Theory]
+        [MemberData(nameof(GetErrorResponses))]
+        public async Task GivenErrorResponse_WhenTakeSlotIsCalled_ThenThrowsAppException(HttpStatusCode statusCode, string expectedMessage)
+        {
+            using var httpTest = new HttpTest();
+
+            httpTest.ForCallsTo($"{BaseUrl}/TakeSlot")
+                .WithVerb(HttpMethod.Post)
+                .RespondWith(string.Empty, (int)statusCode);
+
+            var exception = await Assert.ThrowsAsync<AppException>(async () =>
+                await _client.TakeSlotAsync(It.IsAny<SlotDTO>())
             );
 
             Assert.Equal(expectedMessage, exception.Message);
