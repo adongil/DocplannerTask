@@ -128,33 +128,34 @@ The development of this API followed a **Test-Driven Development (TDD)** approac
 - This approach makes the service **lightweight and highly maintainable**.
 
 #### 4️ Authentication & Security
-- The external service required **Basic Authentication**, so we:
+- The external service requires **Basic Authentication**, so we:
   - Configured **Swagger UI** to accept credentials.
-  - Passed the **Authorization header** through requests using **IHttpContextAccessor**.
+  - Forwarded the **Authorization header** using the `BasicAuthenticationHandler` implementation.
 
 #### 5️ Exception Handling & Logging
-- We introduced **AppException** to standardize error handling with HTTP status codes.
-- Logging was added using **.NET's built-in ILogger**, outputting structured logs to **console**.
-- This approach prepares the API for **containerized deployments in AWS/Azure**.
+- We introduced **AppException** to standardize error handling with HTTP status codes.  
+  - Creating multiple custom exception types was considered unnecessary for this exercise, as it would introduce unnecessary complexity.  
+- Logging was implemented using **.NET's built-in ILogger**, providing structured logs directly to the **console**.  
+- This approach ensures that logs are visible in the console and makes the API **ready for containerized deployments** in AWS/Azure.  
+
 
 ---
 
-### Key Design Decisions
+### Design Decisions and Challenges
 
 - **RawDays Dictionary for JSON Parsing**  
-We initially parsed raw JSON days dynamically into **DayOfWeek**, ensuring flexibility in processing different API response formats.  
-This design choice was necessary as the API could return different day names dynamically.
+The external service only returns the days that have available slots, which posed a challenge for structured deserialization. This was resolved by introducing the RawDays property, which acts as an intermediate mapping layer to convert the raw JSON response into a structured dictionary.
 
 - **CQRS Potential**  
-By splitting **GET (availability)** and **POST (booking)** into different service methods in **SlotService**, we laid the foundation for a **future CQRS architecture**.  
-This separation would allow scaling **availability queries** independently from **booking operations**, facilitating potential microservices migration.
+By splitting GET (availability) and POST (booking) into separate service methods in SlotService, we laid the foundation for a future CQRS architecture.
+This separation, whether within distinct services or as a step towards microservices, would allow availability queries to scale independently from booking operations, improving performance and maintainability.
 
 - **Lightweight API Design**      
     - **Minimal APIs** instead of controllers for a simpler, more efficient REST interface.
     - **MediatR** for clean separation of concerns between commands and handlers.
-    - **TDD approach** to ensure minimal working code with full test coverage.
 
-This structured approach ensured that **every layer was developed incrementally**, thoroughly tested, and prepared for **future scalability and deployment**.
+- **TDD approach** to ensure minimal working code with full test coverage.
+   - This structured approach ensured that **every layer was developed incrementally**, thoroughly tested, and prepared for **future scalability and deployment**.
 
 ---
 
@@ -190,7 +191,7 @@ This structured approach ensured that **every layer was developed incrementally*
 This API uses **Swagger** for interactive API documentation and testing.
 
 ### **How to Authenticate in Swagger**
-1. Open `https://localhost:5001/swagger`.
+1. Open `ttp://localhost:5093/swagger/index.html`.
 2. Click **Authorize** (top-right button).
 3. Enter **Basic Auth credentials**:
    - **Username:** `<username>`
@@ -204,32 +205,29 @@ This API uses **Swagger** for interactive API documentation and testing.
   Example: `/api/availability/20240318`.
 - **Book a Slot:**  
   Call `/api/bookings` with a **valid JSON payload**.
-  
----
-## Logging & Exception Handling
-
-### **Logging Strategy**
-- Used **ILogger** to output structured logs.
-- Logs are written to the **console**, making them compatible with **Azure & AWS cloud environments**.
-
-### **Centralized Exception Handling**
-- Introduced `AppException` for **standardized error responses**.
-- Errors are **mapped to HTTP status codes** automatically.
-- Alternative: A **middleware** could be used for **global exception handling**.
 
 ---
 
 ## Missing Tests & Future Improvements
 
-Due to time constraints, the following **tests were not implemented**:
+Due to time constraints, the following **tests and features were not implemented**:
 
 ### **1. Integration Tests**
-- We did not add **TestContainers** for end-to-end API tests.
-- Future improvement: Use **Docker containers** for **real database & API mocking**.
+To configure integration tests, we would use ASP.NET Core's WebApplicationFactory along with a test HTTP client.
+1. Testing API Endpoints and Business Logic Together
+   - Unlike unit tests that isolate single methods, integration tests call the real API endpoints (e.g., /api/availability/{date} or /api/bookings) to ensure the entire flow works correctly.
+2. Validating Request & Response Formats
+   - Ensures that incoming requests match the expected payload structure and data types.
+   - Confirms that the API returns properly formatted JSON responses with expected status codes.
+   - Prevents regressions when modifying the DTOs or service contracts.
+3. Verifying Security and Authentication
+   - Ensures that the API correctly enforces Basic Authentication.
+   - Tests that endpoints return 401 Unauthorized when requests lack valid credentials.
 
 ### **2. BDD Tests (Behavior-Driven Development)**
-- No **SpecFlow tests** were added.
-- Would help validate the entire booking flow from a **user perspective**.
+To configure BDD tests, we would use TestContainers and Specflow
+- The goal is to have an end-to-end (E2E) test with the application running alongside all its dependencies, but with stubbed responses for external services.
+- BDD tests will capture business language to describe the expected behavior of each test, ensuring that functionality aligns with real-world use cases.
 
-### **3. Edge Cases for Security**
-- No additional security tests beyond **Basic Auth handling**.
+### **3. Middleware for exceptions handling**
+- A middleware could be implemented for global exception handling, providing a centralized mechanism for managing errors consistently across the application.
