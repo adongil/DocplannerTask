@@ -16,7 +16,7 @@ public BasicAuthenticationHandler(
 
 protected override Task<AuthenticateResult> HandleAuthenticateAsync()
 {
-    string authHeader = Request.Headers["Authorization"];
+    string authHeader = Request.Headers["Authorization"].FirstOrDefault() ?? string.Empty;
     if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
     {
         return Task.FromResult(AuthenticateResult.Fail("No Authorization header or not Basic"));

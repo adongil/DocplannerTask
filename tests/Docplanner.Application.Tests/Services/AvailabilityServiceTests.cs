@@ -49,7 +49,7 @@ public class AvailabilityServiceTests
     {
         var requestedDate = new DateOnly(2024, 3, 14);
         _availabilityServiceClient.GetWeeklyAvailableSlots(requestedDate)
-            .Returns((AvailavilityServiceResponse?)null);
+            .Returns(Task.FromResult<AvailavilityServiceResponse>(default!));
 
         var result = await _slotService.GetAvailableWeekSlotsAsync(requestedDate);
 
@@ -83,7 +83,7 @@ public class AvailabilityServiceTests
                 "2024-03-12 13:00:00","2024-03-12 14:00:00","2024-03-12 15:00:00","2024-03-12 16:00:00"
             };
 
-        Assert.Single(availableWeekSlots.Days);
+        Assert.Single(availableWeekSlots!.Days);
         Assert.Equal("Wednesday", availableWeekSlots.Days.First().Day);
         Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
     }
@@ -115,7 +115,7 @@ public class AvailabilityServiceTests
                 "2024-03-11 14:00:00","2024-03-11 15:00:00","2024-03-11 16:00:00"
             };
 
-        Assert.Single(availableWeekSlots.Days);
+        Assert.Single(availableWeekSlots!.Days);
         Assert.Equal("Tuesday", availableWeekSlots.Days.First().Day);
         Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
     }
@@ -153,7 +153,7 @@ public class AvailabilityServiceTests
                 "2024-03-14 14:00:00","2024-03-14 15:00:00","2024-03-14 16:00:00"
             };
 
-        Assert.Single(availableWeekSlots.Days);
+        Assert.Single(availableWeekSlots!.Days);
         Assert.Equal("Friday", availableWeekSlots.Days.First().Day);
         Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
     }
@@ -181,7 +181,7 @@ public class AvailabilityServiceTests
         var availableWeekSlots = await _slotService.GetAvailableWeekSlotsAsync(requestedDate);
 
         // Assert
-        Assert.Single(availableWeekSlots.Days);
+        Assert.Single(availableWeekSlots!.Days);
         Assert.Equal("Tuesday", availableWeekSlots.Days.First().Day);
         Assert.Empty(availableWeekSlots.Days.First().AvailableTimeSlots); 
     }
@@ -218,7 +218,7 @@ public class AvailabilityServiceTests
             "2024-03-11 09:00:00", "2024-03-11 14:00:00", "2024-03-11 15:00:00", "2024-03-11 16:00:00"
         };
 
-        Assert.Single(availableWeekSlots.Days);
+        Assert.Single(availableWeekSlots!.Days);
         Assert.Equal("Tuesday", availableWeekSlots.Days.First().Day);
         Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
     }
@@ -245,7 +245,7 @@ public class AvailabilityServiceTests
         var availableWeekSlots = await _slotService.GetAvailableWeekSlotsAsync(requestedDate);
 
         // Assert
-        Assert.Single(availableWeekSlots.Days);
+        Assert.Single(availableWeekSlots!.Days);
         Assert.Equal("Monday", availableWeekSlots.Days.First().Day);
         Assert.Empty(availableWeekSlots.Days.First().AvailableTimeSlots);  
     }
@@ -272,7 +272,7 @@ public class AvailabilityServiceTests
         var availableWeekSlots = await _slotService.GetAvailableWeekSlotsAsync(requestedDate);
 
         // Assert
-        Assert.Single(availableWeekSlots.Days);
+        Assert.Single(availableWeekSlots!.Days);
         Assert.Equal("Wednesday", availableWeekSlots.Days.First().Day);
         Assert.Empty(availableWeekSlots.Days.First().AvailableTimeSlots);  
     }
@@ -311,7 +311,7 @@ public class AvailabilityServiceTests
             "2024-03-13 14:00:00", "2024-03-13 15:00:00", "2024-03-13 16:00:00"
         };
 
-        Assert.Single(availableWeekSlots.Days);
+        Assert.Single(availableWeekSlots!.Days);
         Assert.Equal("Thursday", availableWeekSlots.Days.First().Day);
         Assert.Equal(expectedTimeSlots, availableWeekSlots.Days.First().AvailableTimeSlots);
     }

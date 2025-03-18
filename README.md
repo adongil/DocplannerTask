@@ -16,6 +16,8 @@ This project follows Microsoft's official guidelines for structuring .NET applic
 
 This structure allows the application to scale efficiently, making it easier to introduce changes while maintaining **loose coupling** between components.
 
+---
+
 ## Security
 
 The external availability service we consume uses **Basic Authentication**. To ensure secure and seamless authentication, we implemented the following approach:
@@ -56,6 +58,7 @@ var response = await url
  .WithHeader("Authorization", authHeader)
  .GetStringAsync();
  ```
+ ---
 
 ## RESTful API Design
 
@@ -93,6 +96,7 @@ The API adheres to **HTTP standards** for response handling:
 
 This RESTful approach ensures **scalability, clarity, and consistency**, allowing seamless future enhancements without breaking existing consumers.
 
+---
 
 ## Development Approach
 
@@ -147,17 +151,19 @@ This separation would allow scaling **availability queries** independently from 
 
 This structured approach ensured that **every layer was developed incrementally**, thoroughly tested, and prepared for **future scalability and deployment**.
 
+---
+
 ## How to Run the Project
 
 To run the API locally, follow these steps:
 
 1. **Clone the Repository**  
    ```sh
-   git clone https://github.com/your-repo/docplanner-api.git
+   git clone <repo-url>
    cd docplanner-api
    ```
 
-2. **Ensure .NET 8+ is Installed**  
+2. **Ensure .NET 9+ is Installed**  
    You can check your installed version with:
    ```sh
    dotnet --version
@@ -181,8 +187,8 @@ This API uses **Swagger** for interactive API documentation and testing.
 1. Open `https://localhost:5001/swagger`.
 2. Click **Authorize** (top-right button).
 3. Enter **Basic Auth credentials**:
-   - **Username:** `techuser`
-   - **Password:** `secretpassWord`
+   - **Username:** `<username>`
+   - **Password:** `<password>`
 4. Click **Authorize** and close the modal.
 5. You can now test endpoints directly from Swagger.
 
@@ -192,6 +198,20 @@ This API uses **Swagger** for interactive API documentation and testing.
   Example: `/api/availability/20240318`.
 - **Book a Slot:**  
   Call `/api/bookings` with a **valid JSON payload**.
+  
+---
+## Logging & Exception Handling
+
+### **Logging Strategy**
+- Used **ILogger** to output structured logs.
+- Logs are written to the **console**, making them compatible with **Azure & AWS cloud environments**.
+
+### **Centralized Exception Handling**
+- Introduced `AppException` for **standardized error responses**.
+- Errors are **mapped to HTTP status codes** automatically.
+- Alternative: A **middleware** could be used for **global exception handling**.
+
+---
 
 ## Missing Tests & Future Improvements
 
@@ -207,17 +227,3 @@ Due to time constraints, the following **tests were not implemented**:
 
 ### **3. Edge Cases for Security**
 - No additional security tests beyond **Basic Auth handling**.
-
-## Logging & Exception Handling
-
-### **Logging Strategy**
-- Used **ILogger** to output structured logs.
-- Logs are written to the **console**, making them compatible with **Azure & AWS cloud environments**.
-
-### **Centralized Exception Handling**
-- Introduced `AppException` for **standardized error responses**.
-- Errors are **mapped to HTTP status codes** automatically.
-- Alternative: A **middleware** could be used for **global exception handling**.
-
-
-
