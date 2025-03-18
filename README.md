@@ -155,8 +155,6 @@ This structured approach ensured that **every layer was developed incrementally*
 
 ## How to Run the Project
 
-To run the API locally, follow these steps:
-
 1. **Clone the Repository**  
    ```sh
    git clone <repo-url>
@@ -170,12 +168,15 @@ To run the API locally, follow these steps:
    ```
 
 3. **Run the API**  
+ 
+ To run the API locally you can just open the solution with Visual Studio or Rider and run it or you can, follow these steps:
+
    ```sh
-   dotnet run --project src/Docplanner.API
+   dotnet run --project src/Docplanner.API --launch-profile http
    ```
 
 4. **Access Swagger UI**  
-   Open `https://localhost:5001/swagger` in your browser.
+   Open `http://localhost:5093/swagger/index.html` in your browser.
 
 ---
 
