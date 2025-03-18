@@ -148,7 +148,7 @@ The external service only returns the days that have available slots, which pose
 
 - **CQRS Potential**  
 By splitting GET (availability) and POST (booking) into separate service methods in SlotService, we laid the foundation for a future CQRS architecture.
-This separation, whether within distinct services or as a step towards microservices, would allow availability queries to scale independently from booking operations, improving performance and maintainability.
+This separation would allow us to scale read (availability queries) and write (booking operations) independently, optimizing performance and scalability.
 
 - **Lightweight API Design**      
     - **Minimal APIs** instead of controllers for a simpler, more efficient REST interface.
@@ -191,7 +191,7 @@ This separation, whether within distinct services or as a step towards microserv
 This API uses **Swagger** for interactive API documentation and testing.
 
 ### **How to Authenticate in Swagger**
-1. Open `ttp://localhost:5093/swagger/index.html`.
+1. Open `http://localhost:5093/swagger/index.html`.
 2. Click **Authorize** (top-right button).
 3. Enter **Basic Auth credentials**:
    - **Username:** `<username>`
@@ -213,7 +213,7 @@ This API uses **Swagger** for interactive API documentation and testing.
 Due to time constraints, the following **tests and features were not implemented**:
 
 ### **1. Integration Tests**
-To configure integration tests, we would use ASP.NET Core's WebApplicationFactory along with a test HTTP client.
+Integration tests could be implemented using ASP.NET Core's WebApplicationFactory to ensure API consistency and correct dependency resolution in a controlled test environment.
 1. Testing API Endpoints and Business Logic Together
    - Unlike unit tests that isolate single methods, integration tests call the real API endpoints (e.g., /api/availability/{date} or /api/bookings) to ensure the entire flow works correctly.
 2. Validating Request & Response Formats
@@ -225,9 +225,9 @@ To configure integration tests, we would use ASP.NET Core's WebApplicationFactor
    - Tests that endpoints return 401 Unauthorized when requests lack valid credentials.
 
 ### **2. BDD Tests (Behavior-Driven Development)**
-To configure BDD tests, we would use TestContainers and Specflow
+To configure BDD tests, we would use TestContainers and Specflow. 
 - The goal is to have an end-to-end (E2E) test with the application running alongside all its dependencies, but with stubbed responses for external services.
-- BDD tests will capture business language to describe the expected behavior of each test, ensuring that functionality aligns with real-world use cases.
+- BDD tests provide a business-readable format to describe expected API behaviors, ensuring alignment between technical implementation and business requirements.
 
 ### **3. Middleware for exceptions handling**
-- A middleware could be implemented for global exception handling, providing a centralized mechanism for managing errors consistently across the application.
+- Implementing an exception handling middleware would further centralize error responses, ensuring consistency across all API layers and reducing the need for repetitive error-handling logic.
