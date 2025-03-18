@@ -104,22 +104,27 @@ The development of this API followed a **Test-Driven Development (TDD)** approac
 
 ### Step-by-Step Approach
 
-#### 1️ Client Layer First
+#### 1️ Client Layer
 - We started with the **AvailabilityServiceClient**, writing unit tests using **Flurl.HttpTest** to mock API responses.
-- During testing, we discovered that the **FacilityId** field was required for successful slot booking, which was **not** initially documented in the external API contract.
-- We adapted the implementation to ensure FacilityId was always included.
+- The goal was to deserialize the response into an object that could be efficiently used for calculations in the application service.
+- During manual testing, we discovered that the **FacilityId** field was required for successful slot booking, even though this was **not** initially documented in the external API contract.
+- We adapted the implementation to ensure that **FacilityId** was included both in the **Get Availability** request and in the **Take Slot** logic.
 
 #### 2️ Application Service & Business Logic
-- We built **SlotService**, responsible for orchestrating business rules like filtering available time slots.
+- We built **SlotService**, responsible for orchestrating business rules such as filtering available time slots and booking slots.  
+  - This service could be refactored in the future if new features are introduced.  
+  - A suggested improvement would be to split it into **AvailabilityService** and **BookingService** for better separation of concerns.  
+- The goal was to generate a list of slots based on the **start and end working hours** and then filter this initial list to **remove lunch breaks and busy slots**.  
 - Several scenarios were covered with unit tests:
-  - **Lunch breaks filtering.**
-  - **Busy slots overlapping working hours.**
-  - **Invalid slot durations (negative or zero).**
-  - **Busy slots outside working hours.**
+  - **Combinations of lunch breaks and busy slot filtering.**  
+  - **Busy slots overlapping working hours.**  
+  - **Invalid slot durations (negative or zero).**  
+  - **Busy slots outside working hours.**  
+
 
 #### 3️ MediatR & Minimal APIs
 - We used **MediatR** to decouple application logic from the API endpoints.
-- The API was implemented using **Minimal APIs**, keeping controllers unnecessary.
+- The API was implemented using **Minimal APIs**.
 - This approach makes the service **lightweight and highly maintainable**.
 
 #### 4️ Authentication & Security
