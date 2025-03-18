@@ -2,6 +2,7 @@
 using Docplanner.Application.Services;
 using MediatR;
 
+namespace Docplanner.Application.Handlers;
 public class PostTakeSlotHandler : IRequestHandler<PostTakeSlotCommand, bool>
 {
     private readonly ISlotService _slotService;

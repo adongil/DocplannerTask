@@ -1,15 +1,15 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using Docplanner.API.Auth;
+using Microsoft.AspNetCore.Authentication;
 
-namespace Docplanner.API.Configuration
+namespace Docplanner.API.Configuration;
+
+public static class Authentication
 {
-    public static class Authentication
+    public static void AddAuth(this IServiceCollection services)
     {
-        public static void AddAuth(this IServiceCollection services)
-        {
-            services.AddAuthentication("BasicAuth")
-                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuth", options => { });
+        services.AddAuthentication("BasicAuth")
+            .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("BasicAuth", options => { });
 
-            services.AddAuthorization();  
-        }
+        services.AddAuthorization();  
     }
 }

@@ -5,27 +5,26 @@ using Docplanner.Infrastructure.Exceptions;
 using MediatR;
 using System.Net;
 
-namespace Docplanner.Application.Handlers
+namespace Docplanner.Application.Handlers;
+
+public class GetWeeklyAvailableSlotsHandler : IRequestHandler<GetWeeklyAvailableSlotsCommand, AvailableSlotsDTO>
 {
-    public class GetWeeklyAvailableSlotsHandler : IRequestHandler<GetWeeklyAvailableSlotsCommand, AvailableSlotsDTO>
+    private readonly ISlotService _slotService;
+
+    public GetWeeklyAvailableSlotsHandler(ISlotService availavilityService)
     {
-        private readonly ISlotService _slotService;
+        _slotService = availavilityService;
+    }
 
-        public GetWeeklyAvailableSlotsHandler(ISlotService availavilityService)
+    public async Task<AvailableSlotsDTO> Handle(GetWeeklyAvailableSlotsCommand request, CancellationToken cancellationToken)
+    {
+        var response = await _slotService.GetAvailableWeekSlotsAsync(request.Date);
+
+        if (response == null)
         {
-            _slotService = availavilityService;
+            throw new AppException("No available slots found for the given week.", (int)HttpStatusCode.NotFound);
         }
 
-        public async Task<AvailableSlotsDTO> Handle(GetWeeklyAvailableSlotsCommand request, CancellationToken cancellationToken)
-        {
-            var response = await _slotService.GetAvailableWeekSlotsAsync(request.Date);
-
-            if (response == null)
-            {
-                throw new AppException("No available slots found for the given week.", (int)HttpStatusCode.NotFound);
-            }
-
-            return response;
-        }
+        return response;
     }
 }

@@ -10,6 +10,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.3.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
@@ -21,14 +22,11 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Docplanner.API\Docplanner.API.csproj" />
     <ProjectReference Include="..\..\src\Docplanner.Application\Docplanner.Application.csproj" />
+    <ProjectReference Include="..\..\src\Docplanner.Infrastructure\Docplanner.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Routes\" />
   </ItemGroup>
 
 </Project>

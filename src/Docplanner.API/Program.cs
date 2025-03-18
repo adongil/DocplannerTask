@@ -1,8 +1,6 @@
 using Docplanner.API.Routes;
 using Docplanner.API.Configuration;
 using Docplanner.API.DependencyInjection;
-using Docplanner.Application.Services;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 

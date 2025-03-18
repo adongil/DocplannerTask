@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
 
+
+namespace Docplanner.Infrastructure.Client;
+
 public class AvailabilityServiceClient : IAvailabilityServiceClient
 {
     private readonly string _baseUrl;
